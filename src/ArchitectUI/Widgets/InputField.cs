@@ -7,7 +7,7 @@ class InputField : Widget
 {
     public string Text
     {
-        get;
+        get => field;
         set
         {
             if (value == field) return;
@@ -34,7 +34,6 @@ class InputField : Widget
         };
     }
 
-    public override void Draw() => Content.Draw();
 
 }
 

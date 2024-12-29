@@ -9,7 +9,6 @@ struct Size(int width, int height)
 
     public static Size Infinite => new(int.MaxValue, int.MaxValue);
 
-
     public static Size operator *(Size left, int right) => new(left.Width * right, left.Height * right);
 
     public static Size operator +(Size left, Size right) => new(left.Width + right.Width, left.Height + right.Height);
@@ -28,6 +27,5 @@ struct Size(int width, int height)
         Math.Clamp(value.Width, min.Width, max.Width),
         Math.Clamp(value.Height, min.Height, max.Height)
     );
-
 
 }

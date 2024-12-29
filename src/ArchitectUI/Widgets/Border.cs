@@ -8,7 +8,7 @@ class Border : Widget
 
     public Color OutlineColor
     {
-        get;
+        get => field;
         set
         {
             if (value == field) return;
@@ -19,7 +19,7 @@ class Border : Widget
 
     public int OutlineThickness
     {
-        get;
+        get => field;
         set
         {
             if (value == field) return;
@@ -38,5 +38,6 @@ class Border : Widget
     {
         Context.Canvas.DrawRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height);
         Context.Canvas.DrawRectangle(BackgroundColor, Position.X + OutlineThickness, Position.Y + OutlineThickness, Size.Width - OutlineThickness * 2, Size.Height - OutlineThickness * 2);
+        Content?.Draw();
     }
 }
