@@ -1,58 +1,39 @@
 using System.Drawing;
-using Architect.Enums;
-using Architect.Models;
-using Architect.Utils;
-using ArchitectUI.Utils;
+using Architect.UI.Enums;
+using Architect.UI.Models;
+using Architect.UI.Extensions;
+using Architect.UI.Utils;
+using Size = Architect.UI.Models.Size;
 
-namespace Architect.Widgets;
+namespace Architect.UI;
 
-abstract class Widget : IDisposable
+public abstract class Widget : IDisposable
 {
 
-    public HorizontalAlignment HorizontalAlignment { get; set; }
+    public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Center;
 
-    public VerticalAlignment VerticalAlignment { get; set; }
+    public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
 
     public DrawingContext Context { get; set; }
     public bool IsVisible { get; private set; }
 
-    private bool isDirty = false;
+    private protected bool isDirty = false;
 
     public Size Size
     {
         get => field;
-        set
-        {
-            if (ShouldRedraw(Size, value))
-            {
-                field = value;
-                Draw();
-            }
-        }
+        set => SetProperty(ref field, value);
     }
     public Vector2 Position
     {
         get => field;
-        set
-        {
-            if (ShouldRedraw(Position, value))
-            {
-                field = value;
-                Draw();
-            }
-        }
+        set => SetProperty(ref field, value);
     }
     public Color BackgroundColor
     {
         get => field;
-        set
-        {
-            if (ShouldRedraw(BackgroundColor, value))
-            {
-                field = value;
-                Draw();
-            }
-        }
+        set => SetProperty(ref field, value);
+
     }
 
     public Widget Content
@@ -60,7 +41,7 @@ abstract class Widget : IDisposable
         get => Context.Child;
         set
         {
-            if (ShouldRedraw(Context.Child, value))
+            if (ShouldRedraw(Content, value))
             {
                 AttachContent(value);
                 Draw();
@@ -69,30 +50,10 @@ abstract class Widget : IDisposable
     }
 
 
-    private protected bool ShouldRedraw(object currentValue, object newValue)
-    {
-        if (currentValue == newValue || newValue == null) return false;
-        if (currentValue is Widget widget && newValue is Widget newWidget)
-        {
-            if (widget.IsAncestor(newWidget)) return false;
-        }
-        isDirty = true;
-        return isDirty;
-    }
-
-
-    private void AttachContent(Widget widget)
-    {
-        if (widget == null) return;
-        widget.Context = Context;
-        Context.Child = widget;
-        widget.OnAttachToWidget(Context);
-    }
-
     public Widget()
     {
         Context = new DrawingContext(this, null);
-        Position = AlignmentHelper.Center(Context.Parent.Size, Size);
+        Position = Vector2.Zero;
         Size = Size.Clamp(Size.Zero, Context.Parent.Size, Size.Infinite);
         BackgroundColor = Color.Transparent;
     }
@@ -128,25 +89,17 @@ abstract class Widget : IDisposable
 
     public virtual void OnDetachFromWidget() => Content?.Dispose();
 
-    public virtual void Draw()
+    public void BeginDraw()
     {
-        if (!IsVisible) return;
+        if (!isDirty || !IsVisible) return;
+        Context.Canvas.Clear(Size, Position);
+        Draw();
+        isDirty = false;
 
-        if (isDirty)
-        {
-            if (Content != null)
-            {
-                Content.Draw();
-            }
-            else
-            {
-                Context.Canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
-            }
-            isDirty = false;
-        }
     }
 
-    public void Dispose() => Context.Dispose();
+    public virtual void Draw() => Content?.Draw();
+
 
     protected private bool IsAncestor(Widget widget)
     {
@@ -157,4 +110,38 @@ abstract class Widget : IDisposable
         }
         return false;
     }
+
+    protected private void SetProperty<T>(ref T field, T value)
+    {
+        if (ShouldRedraw(field, value))
+        {
+            field = value;
+        }
+    }
+
+    protected private bool ShouldRedraw(object currentValue, object newValue)
+    {
+        if (currentValue == newValue || newValue == null || isDirty) return false;
+        if (currentValue is Widget widget && newValue is Widget newWidget)
+        {
+            if (widget.IsAncestor(newWidget)) return false;
+        }
+        isDirty = true;
+        return isDirty;
+    }
+
+    private void AttachContent(Widget? widget)
+    {
+        if (widget == null) return;
+        widget.Context = Context;
+        Context.Child = widget;
+        widget.OnAttachToWidget(Context);
+    }
+
+    public void Dispose() => Context.Dispose();
+
+
+
+
+
 }

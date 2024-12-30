@@ -1,8 +1,8 @@
-using Architect.Models;
+using Architect.UI.Models;
 
-namespace ArchitectUI.Utils;
+namespace Architect.UI.Utils;
 
-static class AlignmentHelper
+public static class AlignmentHelper
 {
     public static Vector2 Center(Size parent, Size child) => new(
         (parent.Width - child.Width) / 2,

@@ -1,5 +1,6 @@
+namespace Architect.UI.Models;
 
-struct Size(int width, int height)
+public struct Size(int width, int height)
 {
     public int Width { get; set; } = width;
 

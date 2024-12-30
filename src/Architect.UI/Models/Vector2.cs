@@ -1,6 +1,6 @@
-namespace Architect.Models;
+namespace Architect.UI.Models;
 
-struct Vector2(int X, int Y)
+public struct Vector2(int X, int Y)
 {
     public int X { get; set; } = X;
 

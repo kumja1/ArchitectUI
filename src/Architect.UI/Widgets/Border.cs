@@ -1,7 +1,6 @@
-
 using System.Drawing;
-using Architect.Utils;
-using Architect.Widgets;
+using Architect.UI.Utils;
+using Architect.UI;
 
 class Border : Widget
 {
@@ -9,23 +8,13 @@ class Border : Widget
     public Color OutlineColor
     {
         get => field;
-        set
-        {
-            if (value == field) return;
-            field = value;
-            Draw();
-        }
+        set => SetProperty(ref field, value);
     }
 
     public int OutlineThickness
     {
         get => field;
-        set
-        {
-            if (value == field) return;
-            field = value;
-            Draw();
-        }
+        set => SetProperty(ref field, value);
     }
 
     public Border()
@@ -37,7 +26,6 @@ class Border : Widget
     public override void Draw()
     {
         Context.Canvas.DrawRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height);
-        Context.Canvas.DrawRectangle(BackgroundColor, Position.X + OutlineThickness, Position.Y + OutlineThickness, Size.Width - OutlineThickness * 2, Size.Height - OutlineThickness * 2);
         Content?.Draw();
     }
 }
