@@ -1,4 +1,4 @@
-namespace Architect.UI.Models;
+namespace Architect.Common.Models;
 
 public struct Vector2(int X, int Y)
 {

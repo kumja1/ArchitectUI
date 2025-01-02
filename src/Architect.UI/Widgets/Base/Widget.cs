@@ -1,42 +1,44 @@
-using System.Drawing;
 using Architect.UI.Enums;
 using Architect.UI.Models;
 using Architect.UI.Extensions;
 using Architect.UI.Utils;
-using Size = Architect.UI.Models.Size;
+using Architect.Common.Models;
+using Architect.Common.Interfaces;
+using System.Drawing;
+using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI;
 
-public abstract class Widget : IDisposable
+public class Widget : IDisposable, IWidget
 {
-
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Center;
-
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
-
-    public DrawingContext Context { get; set; }
+    public IDrawingContext Context { get; set; }
     public bool IsVisible { get; private set; }
 
-    private protected bool isDirty = false;
+    public int ZIndex { get => field; set => SetProperty(ref field, value); }
 
+    private bool isDirty = false;
+    
     public Size Size
     {
         get => field;
         set => SetProperty(ref field, value);
     }
+
     public Vector2 Position
     {
         get => field;
         set => SetProperty(ref field, value);
     }
+
     public Color BackgroundColor
     {
         get => field;
         set => SetProperty(ref field, value);
-
     }
 
-    public Widget Content
+    public IWidget Content
     {
         get => Context.Child;
         set
@@ -44,64 +46,49 @@ public abstract class Widget : IDisposable
             if (ShouldRedraw(Content, value))
             {
                 AttachContent(value);
-                Draw();
+                BeginDraw();
             }
         }
     }
 
-
     public Widget()
     {
-        Context = new DrawingContext(this, null);
         Position = Vector2.Zero;
-        Size = Size.Clamp(Size.Zero, Context.Parent.Size, Size.Infinite);
+        Context = new DrawingContext(this, null);
         BackgroundColor = Color.Transparent;
     }
 
-    public virtual void OnAttachToWidget(DrawingContext context)
+    public virtual void OnAttachToWidget(IDrawingContext context)
     {
-        switch (HorizontalAlignment)
+        Position = HorizontalAlignment switch
         {
-            case HorizontalAlignment.Left:
-                Position = Position with { X = 0 };
-                break;
-            case HorizontalAlignment.Center:
-                Position = AlignmentHelper.Center(Size, context.Size);
-                break;
-            case HorizontalAlignment.Right:
-                Position = AlignmentHelper.Right(Size, context.Size);
-                break;
-        }
+            HorizontalAlignment.Left => Position with { X = 0 },
+            HorizontalAlignment.Center => AlignmentHelper.Center(Size, context.Size),
+            HorizontalAlignment.Right => AlignmentHelper.Right(Size, context.Size),
+            _ => Position
+        };
 
-        switch (VerticalAlignment)
+        Position = VerticalAlignment switch
         {
-            case VerticalAlignment.Top:
-                Position = Position with { Y = 0 };
-                break;
-            case VerticalAlignment.Center:
-                Position = AlignmentHelper.Center(Size, context.Size);
-                break;
-            case VerticalAlignment.Bottom:
-                Position = AlignmentHelper.Bottom(Size, context.Size);
-                break;
-        }
+            VerticalAlignment.Top => Position with { Y = 0 },
+            VerticalAlignment.Center => AlignmentHelper.Center(Size, context.Size),
+            VerticalAlignment.Bottom => AlignmentHelper.Bottom(Size, context.Size),
+            _ => Position
+        };
     }
 
     public virtual void OnDetachFromWidget() => Content?.Dispose();
 
     public void BeginDraw()
     {
-        if (!isDirty || !IsVisible) return;
+        if (Content == null) throw new ArgumentNullException(nameof(Content), "Content cannot be null when drawing the widget.");
         Context.Canvas.Clear(Size, Position);
         Draw();
-        isDirty = false;
-
     }
 
-    public virtual void Draw() => Content?.Draw();
+    public virtual void Draw() => Content.Draw();
 
-
-    protected private bool IsAncestor(Widget widget)
+    protected private bool IsAncestor(IWidget widget)
     {
         while (widget != null)
         {
@@ -119,29 +106,25 @@ public abstract class Widget : IDisposable
         }
     }
 
-    protected private bool ShouldRedraw(object currentValue, object newValue)
+    private protected bool ShouldRedraw(object currentValue, object newValue)
     {
-        if (currentValue == newValue || newValue == null || isDirty) return false;
-        if (currentValue is Widget widget && newValue is Widget newWidget)
-        {
-            if (widget.IsAncestor(newWidget)) return false;
-        }
-        isDirty = true;
+        if (newValue == null || currentValue == newValue || isDirty || !IsVisible) return false;
+        if (currentValue is Widget widget && newValue is Widget newWidget && (widget.IsAncestor(newWidget) || newWidget.IsAncestor(widget))) return false;
+
+        Context.RenderManager.AddDirtyWidget(this);
         return isDirty;
     }
 
-    private void AttachContent(Widget? widget)
+    private void AttachContent(IWidget? widget)
     {
         if (widget == null) return;
         widget.Context = Context;
         Context.Child = widget;
+
         widget.OnAttachToWidget(Context);
     }
 
     public void Dispose() => Context.Dispose();
 
-
-
-
-
+    public void MarkDirty(bool dirty) => isDirty = dirty;
 }

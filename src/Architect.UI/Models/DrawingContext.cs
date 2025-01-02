@@ -1,4 +1,5 @@
-
+using Architect.Common.Interfaces;
+using Architect.Common.Models;
 using Cosmos.System.Graphics;
 
 namespace Architect.UI.Models;
@@ -6,14 +7,15 @@ namespace Architect.UI.Models;
 /// <summary>
 /// Represents the drawing context between a parent and child widget.
 /// </summary>
-public class DrawingContext : IDisposable
+public class DrawingContext : IDisposable, IDrawingContext
 {
-    public Widget Parent { get; set; }
-    public Widget Child { get; set; }
+    public IWidget Parent { get; set; }
+    public IWidget Child { get; set; }
     public Canvas Canvas { get; set; }
+    public IRenderManager RenderManager => Parent.Context.RenderManager;
     public Size Size { get; set; }
 
-    public DrawingContext(Widget parent, Widget child)
+    public DrawingContext(IWidget parent, IWidget child)
     {
         Parent = parent ?? throw new ArgumentNullException(nameof(parent));
         Child = child;
@@ -21,7 +23,7 @@ public class DrawingContext : IDisposable
         if (child != null) child.Context = this;
     }
 
-    public DrawingContext(Widget parent, Widget child, Canvas canvas)
+    public DrawingContext(IWidget parent, IWidget child, Canvas canvas)
     {
         Parent = parent ?? throw new ArgumentNullException(nameof(parent));
         Child = child;

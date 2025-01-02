@@ -1,4 +1,4 @@
-using Architect.UI.Models;
+using Architect.Common.Models;
 
 namespace Architect.UI.Utils;
 

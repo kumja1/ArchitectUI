@@ -2,7 +2,7 @@ using System.Drawing;
 
 namespace Architect.UI;
 
-class InputField : Widget
+class TextInput : Widget
 {
     public string Text
     {
@@ -10,7 +10,7 @@ class InputField : Widget
         set => SetProperty(ref field, value);
     }
 
-    public InputField()
+    public TextInput()
     {
     
     }

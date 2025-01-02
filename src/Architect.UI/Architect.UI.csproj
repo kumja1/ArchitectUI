@@ -9,5 +9,7 @@
  <ItemGroup>
         <PackageReference Include="Cosmos.System2" Version="0-*" NoWarn="NU1604" />
         <PackageReference Include="Cosmos.Plugs" Version="0-*" NoWarn="NU1604" />
+          <ProjectReference Include="..\Architect.Common\Architect.Common.csproj" />
+
     </ItemGroup>
 </Project>

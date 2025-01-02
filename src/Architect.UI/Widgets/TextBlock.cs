@@ -1,4 +1,6 @@
 using System.Drawing;
+using Architect.Common.Interfaces;
+using Architect.UI.Enums;
 using Cosmos.System.Graphics.Fonts;
 
 namespace Architect.UI;
@@ -62,6 +64,9 @@ class TextBlock : Widget
             
         return lines;
     }
+
+   
+
 
 }
 
