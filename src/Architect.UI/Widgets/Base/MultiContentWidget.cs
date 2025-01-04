@@ -1,20 +1,17 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Architect.Common.Interfaces;
-using Architect.UI.Enums;
 using Architect.UI.Models;
-using Architect.UI.Utils;
+
 
 namespace Architect.UI.Widgets;
 
-class Stack : MultiContentWidget
+public class MultiContentWidget : Widget
 {
-    public int Spacing { get; set; }
 
-    public new ObservableCollection<IWidget> Content { get => field; set => SetProperty(ref field, value); }
+    public ObservableCollection<IWidget> Content { get => field; set => SetProperty(ref field, value); }
 
-
-    public Stack()
+    public MultiContentWidget()
     {
         Content.CollectionChanged += OnContentChanged;
     }
@@ -41,7 +38,6 @@ class Stack : MultiContentWidget
 
     public void Add(Widget widget)
     {
-
         var context = new DrawingContext(this, widget);
         widget.Context = context;
         widget.OnAttachToWidget(context);
@@ -61,27 +57,6 @@ class Stack : MultiContentWidget
             widget.OnDetachFromWidget();
         }
         Content.Clear();
-
-        }
-
-    public override void OnAttachToWidget(IDrawingContext context)
-    {
-        base.OnAttachToWidget(context);
-        // Attach all the widgets to the context
-        var currentX = Position.X;
-        foreach (var widget in Content)
-        {
-            var widgetContext = new DrawingContext(this, widget);
-            widget.Position = VerticalAlignment switch
-            {
-                VerticalAlignment.Center => widget.Position with { Y = Position.Y + AlignmentHelper.Center(widgetContext.Size, widget.Size).Y },
-                VerticalAlignment.Bottom => widget.Position with { Y = Position.Y + AlignmentHelper.Bottom(widgetContext.Size, widget.Size).Y },
-                _ => widget.Position with { X = currentX }
-            };
-
-            widget.OnAttachToWidget(widgetContext);
-            currentX += widget.Size.Width + Spacing;
-        }
     }
 
     public override void OnDetachFromWidget() => Clear();
@@ -99,6 +74,4 @@ class Stack : MultiContentWidget
         Clear();
         base.Dispose();
     }
-
-
 }

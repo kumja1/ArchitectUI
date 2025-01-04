@@ -3,6 +3,7 @@ using Size = Architect.Common.Models.Size;
 using Architect.UI.Utils;
 using Architect.UI;
 using Architect.UI.Extensions;
+using Architect.Widgets;
 
 class Border : Widget
 {
@@ -27,7 +28,8 @@ class Border : Widget
 
     public Border()
     {
-        OutlineColor = ColorHelper.GetMonoChromaticColor(BackgroundColor);
+        
+        OutlineColor = IsAncestor<Background>() ? ColorHelper.GetMonoChromaticColor(GetAncestor<Background>().Color) : Color.Black;
         OutlineThickness = Size.Zero;
         OutlineRadius = 0;
         Size += OutlineThickness;

@@ -10,8 +10,6 @@ namespace Architect.Common.Interfaces
         bool IsVisible { get; }
         Size Size { get; set; }
         Vector2 Position { get; set; }
-        Color BackgroundColor { get; set; }
-        IWidget Content { get; set; }
         int ZIndex { get; set; }
         void OnAttachToWidget(IDrawingContext context);
         void OnDetachFromWidget();

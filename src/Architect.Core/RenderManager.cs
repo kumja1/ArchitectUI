@@ -1,9 +1,11 @@
 using Architect.Common.Interfaces;
-using System.Collections.Generic;
+using Cosmos.System.Graphics;
 
-class RenderManager
+class RenderManager(Canvas canvas)
 {
     private readonly HashSet<IWidget> DirtyWidgets = [];
+
+    private readonly Canvas Canvas = canvas;
 
     public void Tick()
     {
@@ -14,7 +16,6 @@ class RenderManager
         {
             widget.MarkDirty(true);
             widget.BeginDraw();
-
             widget.MarkDirty(false);
         }
         
