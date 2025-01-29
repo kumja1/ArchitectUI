@@ -1,3 +1,11 @@
-bin
-obj
+# Ignore build directories
+bin/
+obj/
+
+# Ignore dependencies
+Cosmos/
+IL2CPU/
+XSharp/
+
+# Ignore solution files
 *.sln
