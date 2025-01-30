@@ -1,9 +1,8 @@
 using Architect.Common.Models;
 using Architect.UI.Enums;
-using Architect.UI.Interfaces;
+using Architect.Common.Interfaces;
 using Architect.UI.Models;
-using Architect.UI.Utils;
-using Size = Architect.Common.Models.Size;
+using Architect.Common.Utils;
 
 namespace Architect.UI;
 
@@ -118,7 +117,7 @@ public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
         Context.Dispose();
     }
 
-    public void MarkDirty(bool dirty)
+    public virtual void MarkDirty(bool dirty)
     {
         isDirty = dirty;
         if (dirty)

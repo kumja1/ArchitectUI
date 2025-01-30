@@ -1,8 +1,8 @@
-using Architect.Common.Interfaces;
 using Architect.Common.Models;
-using Architect.Core.Enums;
+using Architect.Common.Enums;
+using Architect.Common.Interfaces;
 using Architect.Core.Events;
-using Architect.Core.Interfaces;
+using Architect.Common.Interfaces;
 using Cosmos.System;
 using Console = System.Console;
 
@@ -10,8 +10,6 @@ namespace Architect.Core;
 
 static class InputManager
 {
-    public delegate void InputAction(IWidget widget, IEvent inputEvent);
-
     public static Dictionary<InputType, List<(IWidget, EventHandler<IEvent>, ConsoleKeyEx?)>> Inputs = [];
 
     public static void RegisterMouseInput(IWidget widget, InputType inputType, EventHandler<IEvent> action)

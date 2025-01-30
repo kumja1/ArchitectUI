@@ -1,11 +1,10 @@
-using Architect.Core.Interfaces;
+using Architect.Core;
 using Architect.UI.Enums;
-using Architect.UI.Interfaces;
+using Architect.Common.Interfaces;
 using Architect.UI.Models;
 using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI;
-
 
 public class Window : Widget
 {
@@ -15,8 +14,8 @@ public class Window : Widget
     private DockPanel MainContent { get => field; set => SetProperty(ref field, value); }
 
     private readonly HashSet<IWidget> _dirtyWidgets = [];
-   
-    public Window()
+
+    private protected Window()
     {
         MinSize = new Size(100, 100);
         MaxSize = new Size(800, 600);
@@ -32,6 +31,7 @@ public class Window : Widget
         {
             Text = "Maximize",
         };
+
 
         MainContent = new DockPanel
         {
@@ -58,16 +58,9 @@ public class Window : Widget
     }
 
 
-
-    private void OnWindowMaximize(object? sender, IEvent e)
-    {
-        throw new NotImplementedException();
-    }
-
-
     public override void Draw() => MainContent.Draw();
 
-    public virtual void OnWindowClose() => Erase();
+    public virtual void OnWindowClose() => Dispose();
 
     public virtual void OnWindowMinimize()
     {
@@ -80,7 +73,17 @@ public class Window : Widget
     public override void Dispose()
     {
         MainContent.Dispose();
-        OnWindowClose();
         Context.Dispose();
     }
+
+    internal void AddDirtyWidget(Widget widget)
+    {
+        if (_dirtyWidgets.Add(widget))
+        {
+            RenderManager.ScheduleWindowUpdate(this);
+        }
+    }
+
+    public void EraseWidget(Widget widget) =>  RenderManager.ClearArea(widget.Position, widget.Size);
+
 }

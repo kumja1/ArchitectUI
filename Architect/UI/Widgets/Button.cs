@@ -1,5 +1,4 @@
 using System.Drawing;
-using Architect.Widgets;
 
 namespace Architect.UI;
 
@@ -18,7 +17,7 @@ class Button : Widget
             {
                 Text = Text,
                 TextColor = Color.Black,
-                WrapTexIt = false,
+                WrapText = false,
             }
         };
     }

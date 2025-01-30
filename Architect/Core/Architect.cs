@@ -1,3 +1,4 @@
+using Architect.UI;
 using Cosmos.System;
 using Cosmos.System.Graphics;
 using Cosmos.System.ScanMaps;
@@ -12,6 +13,7 @@ class Architect
 
     public static void Intialize(Canvas canvas)
     {
+        RenderManager.Initialize(canvas);
         KeyboardManager.SetKeyLayout(new USStandardLayout());
     }
 

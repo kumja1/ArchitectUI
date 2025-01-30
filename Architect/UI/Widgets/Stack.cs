@@ -1,7 +1,7 @@
-using Architect.Common.Interfaces;
 using Architect.Common.Models;
 using Architect.UI.Enums;
-using Architect.UI.Utils;
+using Architect.Common.Interfaces;
+using Architect.Common.Utils;
 
 namespace Architect.UI;
 

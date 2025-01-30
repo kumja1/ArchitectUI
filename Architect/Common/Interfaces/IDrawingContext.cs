@@ -1,6 +1,6 @@
 using Architect.Common.Models;
 
-namespace Architect.UI.Interfaces;
+namespace Architect.Common.Interfaces;
 
 /// <summary>
 /// This is the drawing context for a widget

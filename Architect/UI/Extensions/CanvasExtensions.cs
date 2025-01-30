@@ -24,7 +24,7 @@ public static class CanvasExtensions
     }
 
 
-    public static void Clear(this Canvas canvas, Size size, Vector2 position, Color? color = null)
+    public static void ClearArea(this Canvas canvas, Size size, Vector2 position, Color? color = null)
     {
         color ??= Color.Black;  
         for (var y = 0; y < size.Height; y++)

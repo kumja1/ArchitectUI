@@ -1,5 +1,7 @@
 using Architect.Common.Models;
 
+namespace Architect.Common.Utils;
+
 static class PositionHelper
 {
 

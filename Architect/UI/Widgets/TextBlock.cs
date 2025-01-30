@@ -1,7 +1,4 @@
 using System.Drawing;
-using Architect.Common.Interfaces;
-using Architect.UI.Enums;
-using Architect.UI.Widgets;
 using Cosmos.System.Graphics.Fonts;
 
 namespace Architect.UI;

@@ -1,9 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Architect.Common.Interfaces;
-using Architect.Common.Models;
-
-
+using Architect.UI.Models;
 
 namespace Architect.UI;
 

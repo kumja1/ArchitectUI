@@ -1,5 +1,5 @@
 using Architect.Common.Models;
-using Architect.UI.Interfaces;
+using Architect.Common.Interfaces;
 
 namespace Architect.UI.Models;
 

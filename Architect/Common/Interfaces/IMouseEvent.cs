@@ -1,7 +1,7 @@
 
 using Architect.Common.Models;
 
-namespace Architect.Core.Interfaces;
+namespace Architect.Common.Interfaces;
 
 interface IMouseEvent : IEvent
 {

@@ -1,9 +1,9 @@
 using System.Drawing;
-using Architect.UI;
 using Architect.UI.Extensions;
-using Architect.UI.Utils;
-using Architect.Widgets;
+using Architect.Common.Utils;
 using Size = Architect.Common.Models.Size;
+
+namespace Architect.UI;
 
 class Border : Widget
 {

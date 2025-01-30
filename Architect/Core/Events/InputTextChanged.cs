@@ -1,5 +1,4 @@
-
-using Architect.Core.Interfaces;
+using Architect.Common.Interfaces;
 
 namespace Architect.Core.Events;
 

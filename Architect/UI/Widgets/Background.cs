@@ -1,7 +1,7 @@
 using System.Drawing;
 using Architect.UI;
 
-namespace Architect.Widgets;
+namespace Architect.UI;
 
 class Background : Widget
 {

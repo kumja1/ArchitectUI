@@ -1,6 +1,6 @@
 using Architect.Common.Models;
 
-namespace Architect.UI.Utils;
+namespace Architect.Common.Utils;
 
 public static class AlignmentHelper
 {
@@ -8,8 +8,6 @@ public static class AlignmentHelper
         (parent.Width - child.Width) / 2,
         (parent.Height - child.Height) / 2
     );
-
-    public static Vector2 TopLeft(Size parent, Size child) => new(0, 0);
 
     public static Vector2 TopRight(Size parent, Size child) => new(
         parent.Width - child.Width,
