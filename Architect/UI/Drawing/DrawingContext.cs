@@ -1,7 +1,7 @@
 using Architect.Common.Models;
 using Architect.Common.Interfaces;
 
-namespace Architect.UI.Models;
+namespace Architect.UI.Drawing;
 
 
 public class DrawingContext : IDisposable, IDrawingContext
@@ -15,14 +15,6 @@ public class DrawingContext : IDisposable, IDrawingContext
 
     public static DrawingContext Empty => new(null, null);
 
-    public Window RootWindow { get; set; }
-
-    public DrawingContext(IWidget parent, IWidget child, Window rootWindow)
-    {
-        Parent = parent ?? throw new ArgumentNullException(nameof(parent));
-        Child = child;
-        RootWindow = rootWindow;
-    }
 
     public DrawingContext(IWidget parent, IWidget child)
     {

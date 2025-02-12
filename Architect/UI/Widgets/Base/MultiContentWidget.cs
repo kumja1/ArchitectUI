@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Architect.Common.Interfaces;
-using Architect.UI.Models;
+using Architect.UI.Drawing;
+using Cosmos.System.Graphics;
 
-namespace Architect.UI;
+namespace Architect.UI.Base;
 
 public class MultiContentWidget : Widget
 {
@@ -19,16 +20,12 @@ public class MultiContentWidget : Widget
         if (e.Action == NotifyCollectionChangedAction.Add)
         {
             foreach (var item in e.NewItems)
-            {
                 Add((Widget)item);
-            }
         }
         else if (e.Action == NotifyCollectionChangedAction.Remove)
         {
             foreach (var item in e.OldItems)
-            {
                 Remove((Widget)item);
-            }
         }
         if (e.Action != NotifyCollectionChangedAction.Reset)
             MarkDirty(true);
@@ -36,9 +33,8 @@ public class MultiContentWidget : Widget
 
     public void Add(Widget widget)
     {
-        var context = new DrawingContext(this, widget);
-        widget.Context = context;
-        widget.OnAttachToWidget(context);
+        Content.Add(widget);
+        widget.OnAttachToWidget(new DrawingContext(this, widget));
     }
 
     public void Remove(Widget widget)
@@ -47,22 +43,25 @@ public class MultiContentWidget : Widget
         widget.Dispose();
     }
 
-    public void Clear()
+    public void Clear(bool dipose = true)
     {
         foreach (var widget in Content)
         {
             widget.Dispose();
         }
+        
         Content.Clear();
+        if (dipose)
+            Dispose();
     }
 
     public override void OnDetachFromWidget() => Clear();
 
-    public override void Draw()
+    public override void Draw(Canvas canvas)
     {
         foreach (var widget in Content)
         {
-            widget.Draw();
+            widget.Draw(canvas);
         }
     }
 }

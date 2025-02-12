@@ -1,8 +1,11 @@
 using Architect.Common.Models;
-using Architect.UI.Enums;
 using Architect.Common.Utils;
+using Architect.Common.Interfaces;
+using Architect.UI.Drawing;
+using Cosmos.System.Graphics;
+using Architect.UI.Base;
 
-namespace Architect.UI;
+namespace Architect.UI.Layout;
 
 public class DockPanel : MultiContentWidget
 {
@@ -33,11 +36,11 @@ public class DockPanel : MultiContentWidget
         }
     }
 
-    public override void Draw()
+    public override void Draw(Canvas canvas)
     {
         foreach (var item in Content)
         {
-            item.Draw();
+            item.Draw(canvas);
         }
     }
 

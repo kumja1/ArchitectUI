@@ -1,7 +1,8 @@
 using System.Drawing;
-using Architect.UI.Extensions;
 using Architect.Common.Utils;
 using Size = Architect.Common.Models.Size;
+using Cosmos.System.Graphics;
+using Architect.UI.Drawing;
 
 namespace Architect.UI;
 
@@ -35,18 +36,17 @@ class Border : Widget
     }
 
 
-    public override void Draw()
+    public override void Draw(Canvas canvas)
     {
         if (OutlineRadius == 0)
         {
-            Context.Canvas.DrawRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height);
+            canvas.DrawRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height);
             return;
         }
         else
-        {
-            Context.Canvas.DrawRoundedRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height, OutlineRadius);
-        }
+            canvas.DrawRoundedRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height, OutlineRadius);
 
-        Content?.Draw();
+
+        Content?.Draw(canvas);
     }
 }

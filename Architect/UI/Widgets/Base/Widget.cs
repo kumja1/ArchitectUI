@@ -1,16 +1,24 @@
 using Architect.Common.Models;
 using Architect.UI.Enums;
 using Architect.Common.Interfaces;
-using Architect.UI.Models;
 using Architect.Common.Utils;
+using Architect.UI.Drawing;
+using Architect.Core.Rendering;
+using Size = Architect.Common.Models.Size;
+using Cosmos.System.Graphics;
+using Architect.UI.Layout;
 
-namespace Architect.UI;
+namespace Architect.UI.Base;
 
-public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
+public abstract class Widget : IDisposable, IWidget
 {
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Center;
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
     public IDrawingContext Context { get; set; } = DrawingContext.Empty;
+
+    public 
+
+    
     public bool IsVisible
     {
         get; protected set;
@@ -36,9 +44,10 @@ public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
 
     public IWidget Content
     {
-        get => Context.Child;
+        get => field;
         set => SetProperty(ref field, value);
     }
+
 
     private bool isDirty;
 
@@ -50,36 +59,25 @@ public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
 
     public virtual void OnAttachToWidget(IDrawingContext context)
     {
-        Position = HorizontalAlignment switch
-        {
-            HorizontalAlignment.Left => Position with { X = 0 },
-            HorizontalAlignment.Center => AlignmentHelper.Center(context.Size, Size),
-            HorizontalAlignment.Right => AlignmentHelper.Right(context.Size, Size),
-            _ => Position
-        };
+        Context = context;
 
-        Position = VerticalAlignment switch
-        {
-            VerticalAlignment.Top => Position with { Y = 0 },
-            VerticalAlignment.Center => AlignmentHelper.Center(context.Size, Size),
-            VerticalAlignment.Bottom => AlignmentHelper.Bottom(context.Size, Size),
-            _ => Position
-        };
+        
 
     }
 
-    public virtual void OnDetachFromWidget() { }
+    public virtual  void  ArrangeS
 
-    public void BeginDraw()
+    public virtual void OnDetachFromWidget() => Context = DrawingContext.Empty;
+
+    public void BeginDraw(Canvas canvas)
     {
-        if (Content == null) throw new ArgumentNullException(nameof(Content), "Content cannot be null when drawing the widget.");
-        Erase();
-        Draw();
+        if (Content == null) throw new ArgumentNullException(nameof(canvas), "Content cannot be null when drawing the widget.");
+        
+        Draw(canvas);
         MarkDirty(false);
     }
 
-    public virtual void Draw() => Content.Draw();
-
+    public virtual void Draw(Canvas canvas) => Content.Draw(canvas);
 
     protected void SetProperty<T>(ref T field, T value)
     {
@@ -104,29 +102,24 @@ public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
     private void AttachContent(IWidget? widget)
     {
         Content?.Dispose();
-
         if (widget == null) return;
-        Context = new DrawingContext(this, widget);
-        widget.OnAttachToWidget(Context);
+        widget.OnAttachToWidget(new DrawingContext(this, widget));
     }
 
     public virtual void Dispose()
     {
-        Erase();
+        RenderManager.Instance.Erase(this);
         OnDetachFromWidget();
-        Context.Dispose();
     }
 
     public virtual void MarkDirty(bool dirty)
     {
         isDirty = dirty;
         if (dirty)
-            Context.RootWindow.AddDirtyWidget(this);
+            RenderManager.Instance.ScheduleRedraw(this);
     }
 
     public T GetRef<T>(ref T target) where T : Widget => target = (T)this;
-
-    public void Erase() => Context.RootWindow.Erase(Position, Size);
 
 
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
@@ -146,20 +139,6 @@ public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
         return null;
     }
 
-    public bool Equals(Widget? other)
-    {
-        if (other == null) return false;
-        return HorizontalAlignment == other.HorizontalAlignment &&
-               VerticalAlignment == other.VerticalAlignment &&
-               Context == other.Context &&
-               IsVisible == other.IsVisible &&
-               ZIndex == other.ZIndex &&
-               Size.Equals(other.Size) &&
-               Position.Equals(other.Position) &&
-               Equals(Content, other.Content);
-    }
-
-    public override bool Equals(object? obj) => Equals(obj as Widget);
     public override int GetHashCode() => HashCode.Combine(HorizontalAlignment, VerticalAlignment, Context, IsVisible, ZIndex, Size, Position, Content);
 
     public bool HitTest(Vector2 position) => IsVisible && PositionHelper.PositionWithin(position, Size, Position);

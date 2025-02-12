@@ -1,4 +1,9 @@
 using System.Drawing;
+using Architect.Common.Interfaces;
+using Architect.Core.Input;
+using Architect.Core.Input.Events;
+using Cosmos.System;
+using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 
 namespace Architect.UI;
@@ -21,13 +26,15 @@ class TextBlock : Widget
 
     public Font Font { get; set; } = PCScreenFont.Default;
 
+    public EventHandler<InputEvent> TextChanged;
+
 
     public TextBlock()
     {
         TextColor = Color.Black;
     }
 
-    public override void Draw()
+    public override void Draw(Canvas canvas)
     {
 
         if (WrapText)
@@ -36,13 +43,13 @@ class TextBlock : Widget
             var currentY = Position.Y;
             foreach (var line in lines)
             {
-                Context.Canvas.DrawString(line, Font, TextColor, Position.X, currentY);
+                canvas.DrawString(line, Font, TextColor, Position.X, currentY);
                 currentY += Font.Height;
             }
         }
         else
         {
-            Context.Canvas.DrawString(Text, Font, TextColor, Position.X, Position.Y);
+            canvas.DrawString(Text, Font, TextColor, Position.X, Position.Y);
         }
     }
 
@@ -69,8 +76,6 @@ class TextBlock : Widget
         return lines;
     }
 
-
-
-
+   
 }
 

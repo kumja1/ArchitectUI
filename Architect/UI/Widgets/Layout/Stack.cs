@@ -2,8 +2,10 @@ using Architect.Common.Models;
 using Architect.UI.Enums;
 using Architect.Common.Interfaces;
 using Architect.Common.Utils;
+using Architect.UI.Drawing;
+using Architect.UI.Base;
 
-namespace Architect.UI;
+namespace Architect.UI.Layout;
 
 class Stack : MultiContentWidget
 {

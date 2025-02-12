@@ -4,7 +4,7 @@ using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using Size = Architect.Common.Models.Size;
 
-namespace Architect.UI.Extensions;
+namespace Architect.UI.Drawing;
 
 public static class CanvasExtensions
 {

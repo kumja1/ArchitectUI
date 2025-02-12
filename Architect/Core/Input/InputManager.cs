@@ -1,32 +1,45 @@
 using Architect.Common.Models;
 using Architect.Common.Enums;
 using Architect.Common.Interfaces;
-using Architect.Core.Events;
-using Architect.Common.Interfaces;
 using Cosmos.System;
 using Console = System.Console;
+using Architect.Core.Input.Events;
 
-namespace Architect.Core;
+namespace Architect.Core.Input;
 
-static class InputManager
+class InputManager
 {
-    public static Dictionary<InputType, List<(IWidget, EventHandler<IEvent>, ConsoleKeyEx?)>> Inputs = [];
+    private static InputManager? _instance;
 
-    public static void RegisterMouseInput(IWidget widget, InputType inputType, EventHandler<IEvent> action)
+    public static InputManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                throw new InvalidOperationException("RenderManager must be initialized first");
+            }
+            return _instance;
+        }
+    }
+
+    private readonly Dictionary<InputType, List<(IWidget, EventHandler<InputEvent>, List<ConsoleKeyEx>?)>> _inputs = [];
+
+    public void RegisterMouseInput(IWidget widget, InputType inputType, EventHandler<InputEvent> action)
     {
         if (inputType == InputType.Keyboard) throw new InvalidDataException("Keyboard input cannot be registered as a mouse input.");
         RegisterInput(widget, inputType, action, null);
     }
 
-    public static void RegisterKeyboardInput(IWidget widget, ConsoleKeyEx keyboardKey, EventHandler<IEvent> action) => RegisterInput(widget, InputType.Keyboard, action, keyboardKey);
+    public void RegisterKeyboardInput(IWidget widget, List<ConsoleKeyEx> keyboardKey, EventHandler<InputEvent> action) => RegisterInput(widget, InputType.Keyboard, action, keyboardKey);
 
-    public static void RegisterInput(IWidget widget, InputType inputType, EventHandler<IEvent> action, ConsoleKeyEx? key = null) => (Inputs[inputType] ??= []).Add((widget, action, key));
+    public void RegisterInput(IWidget widget, InputType inputType, EventHandler<InputEvent> action, List<ConsoleKeyEx>? key = null) => (_inputs[inputType] ??= []).Add((widget, action, key));
 
-    public static void Tick()
+    public void Tick()
     {
-        foreach (var inputType in Inputs.Keys)
+        foreach (var inputType in _inputs.Keys)
         {
-            foreach (var (widget, action, keyboardKey) in Inputs[inputType])
+            foreach (var (widget, action, keyboardKey) in _inputs[inputType])
             {
                 if (inputType == InputType.MouseClick || inputType == InputType.MouseScroll)
                     HandleMouse(widget, action, inputType);
@@ -36,12 +49,12 @@ static class InputManager
         }
     }
 
-    private static void HandleKeyboard(IWidget widget, EventHandler<IEvent> action, ConsoleKeyEx? keyboardKey)
+    private void HandleKeyboard(IWidget widget, EventHandler<InputEvent> action, List<ConsoleKeyEx>? keyboardKey)
     {
         if (KeyboardManager.KeyAvailable)
         {
             var key = KeyboardManager.ReadKey();
-            if (keyboardKey == null || key.Key == keyboardKey)
+            if (keyboardKey != null && keyboardKey.Contains(key.Key))
             {
                 action.Invoke(widget, new KeyboardEvent(key.Key, key.Type));
             }
@@ -53,13 +66,13 @@ static class InputManager
         }
     }
 
-    private static void Unregister(IWidget widget) => Inputs.FirstOrDefault(x => x.Value.Any(y => y.Item1  == widget)).Value.RemoveAll(x => x.Item1 == widget);
+    public void Unregister(IWidget widget, InputType? inputType = null) => (inputType != null ? _inputs[inputType.Value] : _inputs.FirstOrDefault(x => x.Value.Any(y => y.Item1 == widget)).Value).RemoveAll(x => x.Item1 == widget);
 
-    public static void HandleMouse(IWidget widget, EventHandler<IEvent> action, InputType inputType)
+    public void HandleMouse(IWidget widget, EventHandler<InputEvent> action, InputType inputType)
     {
         if (MouseManager.X < 0 || MouseManager.Y < 0) return;
 
-        IMouseEvent mouseEvent = GetMouseEvent();
+        InputEvent mouseEvent = GetMouseEvent();
         if (mouseEvent == null)
         {
             Console.WriteLine("No mouse event available. Unregistering widget");
@@ -71,11 +84,9 @@ static class InputManager
             action.Invoke(widget, mouseEvent);
         else
             action.Invoke(widget, mouseEvent);
-        
-
     }
 
-    private static IMouseEvent? GetMouseEvent()
+    private InputEvent? GetMouseEvent()
     {
         var mousePosition = new Vector2((int)MouseManager.X, (int)MouseManager.Y);
         return mousePosition switch
@@ -86,6 +97,9 @@ static class InputManager
         };
     }
 
+    internal static void Initialize(ScanMapBase keyboardLayout)
+    {
+        _instance ??= new InputManager();
+        KeyboardManager.SetKeyLayout(keyboardLayout);
+    }
 }
-
-

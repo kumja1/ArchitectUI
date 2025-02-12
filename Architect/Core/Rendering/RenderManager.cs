@@ -1,44 +1,65 @@
+using System.Drawing;
 using Architect.Common.Interfaces;
+using Cosmos.System.Graphics;
 
-namespace Architect.UI;
+namespace Architect.Core.Rendering;
 
-static class RenderManager
+sealed class RenderManager
 {
-    private static readonly HashSet<IWidget> _dirtyWindows = [];
+    private static RenderManager? _instance;
 
-    private static Canvas Canvas { get; set; }
-
-    public static void Tick()
+    public static RenderManager Instance
     {
-        DrawMouse();
-
-        if (_dirtyWindows.Count == 0)
-            return;
-
-        foreach (var window in _dirtyWindows)
+        get
         {
-            window.RedrawDirtyWidgets();
+            if (_instance == null)
+            {
+                throw new InvalidOperationException("RenderManager must be initialized first");
+            }
+            return _instance;
         }
-
-        _dirtyWindows.Clear();
     }
 
-    public static void Initialize(Canvas canvas)
+    public static RenderManager Initialize(Canvas canvas)
+    {
+        return _instance ??= new RenderManager(canvas);
+    }
+
+    private RenderManager(Canvas canvas)
     {
         Canvas = canvas;
     }
 
-    private static void DrawMouse()
-    {
-    }
+    private readonly HashSet<IWidget> _dirtWidgets = [];
 
-    public static void ScheduleWindowUpdate(IWidget window)
+    private Canvas Canvas { get; init; }
+    public void Tick()
     {
-        if (!_dirtyWindows.Contains(window))
+        DrawMouse();
+        if (_dirtWidgets.Count == 0)
+            return;
+
+        foreach (var widget in _dirtWidgets)
         {
-            _dirtyWindows.Add(window);
+            Erase(widget);
+            widget.BeginDraw(Canvas);
         }
+
+        _dirtWidgets.Clear();
     }
 
-    public static void ClearArea(Vector2 position, Vector2 size) => Canvas.ClearArea(position, size);
+    private void DrawMouse()
+    {
+    }
+
+    public void ScheduleRedraw(IWidget widget)
+    {
+        if (widget.IsVisible && widget.ZIndex > 0 && !_dirtWidgets.Contains(widget))
+            _dirtWidgets.Add(widget);
+    }
+
+    public void Erase(IWidget widget) => Canvas.DrawRectangle(Color.Transparent, widget.Position.X, widget.Position.Y, widget.Size.Width, widget.Size.Height);
+
+
+
 }

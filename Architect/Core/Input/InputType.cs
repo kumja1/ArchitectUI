@@ -1,4 +1,4 @@
-namespace Architect.Common.Enums;
+namespace Architect.Core.Input;
 
 public enum InputType
 {

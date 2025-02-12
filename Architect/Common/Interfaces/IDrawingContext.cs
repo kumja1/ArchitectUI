@@ -17,10 +17,6 @@ public interface IDrawingContext : IDisposable
     ///</summary>
     public IWidget Child { get; set; }
 
-    /// <summary>
-    /// This is the root ancestor of both the child and parent widget
-    ///</summary>
-    public Window RootWindow { get; set; }
 
     /// <summary>
     /// This is the size of the context between the parent and child widget

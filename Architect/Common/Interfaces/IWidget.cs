@@ -1,9 +1,13 @@
 using Architect.Common.Models;
+using Cosmos.System.Graphics;
 
 namespace Architect.Common.Interfaces;
 
     public interface IWidget : IDisposable
     {
+
+
+
         /// <summary>
         /// Gets or sets the drawing context associated with the widget.
         /// </summary>
@@ -43,12 +47,12 @@ namespace Architect.Common.Interfaces;
         /// <summary>
         /// Prepares the widget for drawing operations.
         /// </summary>
-        void BeginDraw();
+        void BeginDraw(Canvas canvas);
 
         /// <summary>
         /// Draws the widget.
         /// </summary>
-        void Draw();
+        void Draw(Canvas canvas);
 
         /// <summary>
         /// Marks the widget as dirty, indicating it needs to be redrawn.
