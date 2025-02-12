@@ -6,7 +6,7 @@ using Cosmos.System;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class TextBlock : Widget
 {

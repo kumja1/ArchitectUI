@@ -4,7 +4,7 @@ using Size = Architect.Common.Models.Size;
 using Cosmos.System.Graphics;
 using Architect.UI.Drawing;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class Border : Widget
 {

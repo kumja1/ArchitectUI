@@ -1,9 +1,8 @@
 using System.Drawing;
-using Architect.Core.Rendering;
-using Architect.UI;
+using Architect.UI.Base;
 using Cosmos.System.Graphics;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class Background : Widget
 {

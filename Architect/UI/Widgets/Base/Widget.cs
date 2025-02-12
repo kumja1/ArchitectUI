@@ -1,5 +1,4 @@
 using Architect.Common.Models;
-using Architect.UI.Enums;
 using Architect.Common.Interfaces;
 using Architect.Common.Utils;
 using Architect.UI.Drawing;
@@ -16,9 +15,9 @@ public abstract class Widget : IDisposable, IWidget
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
     public IDrawingContext Context { get; set; } = DrawingContext.Empty;
 
-    public 
+    public
 
-    
+
     public bool IsVisible
     {
         get; protected set;
@@ -60,19 +59,14 @@ public abstract class Widget : IDisposable, IWidget
     public virtual void OnAttachToWidget(IDrawingContext context)
     {
         Context = context;
-
-        
-
     }
-
-    public virtual  void  ArrangeS
 
     public virtual void OnDetachFromWidget() => Context = DrawingContext.Empty;
 
     public void BeginDraw(Canvas canvas)
     {
         if (Content == null) throw new ArgumentNullException(nameof(canvas), "Content cannot be null when drawing the widget.");
-        
+
         Draw(canvas);
         MarkDirty(false);
     }

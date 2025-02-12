@@ -1,10 +1,9 @@
 using System.Drawing;
 using Architect.Common.Interfaces;
 using Architect.Core.Input;
-using Architect.Common.Enums;
 using Architect.Core.Input.Events;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class Button : Widget
 {

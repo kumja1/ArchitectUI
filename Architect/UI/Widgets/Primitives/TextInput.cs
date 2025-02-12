@@ -1,13 +1,12 @@
 using System.Drawing;
 using Size = Architect.Common.Models.Size;
 using Vector2 = Architect.Common.Models.Vector2;
-using Architect.Widgets;
 using Architect.Common.Interfaces;
 using Cosmos.System;
 using Architect.Core.Input.Events;
 using Architect.Core.Input;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class TextInput : Widget, IFocusable
 {
