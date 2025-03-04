@@ -3,8 +3,9 @@ using Architect.Common.Utils;
 using Size = Architect.Common.Models.Size;
 using Cosmos.System.Graphics;
 using Architect.UI.Drawing;
+using Architect.UI.Base;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class Border : Widget
 {
@@ -29,7 +30,8 @@ class Border : Widget
 
     public Border()
     {
-        OutlineColor = IsAncestor<Background>() ? ColorHelper.GetMonoChromaticColor(GetAncestor<Background>().Color) : Color.Black;
+
+        OutlineColor = ColorHelper.GetMonoChromaticColor(BackgroundColor ?? Color.Black)
         OutlineThickness = Size.Zero;
         OutlineRadius = 0;
         Size += OutlineThickness;
@@ -45,7 +47,6 @@ class Border : Widget
         }
         else
             canvas.DrawRoundedRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height, OutlineRadius);
-
 
         Content?.Draw(canvas);
     }

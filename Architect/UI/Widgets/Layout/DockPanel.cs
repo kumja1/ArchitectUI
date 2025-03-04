@@ -1,9 +1,9 @@
 using Architect.Common.Models;
 using Architect.Common.Utils;
 using Architect.Common.Interfaces;
-using Architect.UI.Drawing;
 using Cosmos.System.Graphics;
 using Architect.UI.Base;
+using Architect.UI.Primitives;
 
 namespace Architect.UI.Layout;
 
@@ -13,9 +13,9 @@ public class DockPanel : MultiContentWidget
 
     public Size Spacing { get => field; set => SetProperty(ref field, value); }
 
-    public override void OnAttachToWidget(IDrawingContext context)
+    public override void Arrange(IWidget parent)
     {
-        base.OnAttachToWidget(context);
+        base.Arrange(parent);
         foreach (Widget item in Content.Cast<Widget>())
         {
             item.Position = item.VerticalAlignment switch
@@ -32,12 +32,13 @@ public class DockPanel : MultiContentWidget
                 _ or HorizontalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size) with { Y = 0 }
             };
 
-            item.OnAttachToWidget(new DrawingContext(this, item));
+            item.OnAttachToWidget(this);
         }
     }
 
     public override void Draw(Canvas canvas)
     {
+
         foreach (var item in Content)
         {
             item.Draw(canvas);

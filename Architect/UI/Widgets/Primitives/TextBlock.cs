@@ -1,12 +1,10 @@
 using System.Drawing;
-using Architect.Common.Interfaces;
-using Architect.Core.Input;
 using Architect.Core.Input.Events;
-using Cosmos.System;
+using Architect.UI.Base;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 
-namespace Architect.UI;
+namespace Architect.UI.Primitives;
 
 class TextBlock : Widget
 {
@@ -60,7 +58,7 @@ class TextBlock : Widget
         var currentLine = string.Empty;
         foreach (var word in words)
         {
-            if ((Font.Width * (word.Length + currentLine.Length)) > Context.Size.Width)
+            if ((Font.Width * (word.Length + currentLine.Length)) > Size.Width)
             {
                 lines.Add(currentLine);
                 currentLine = word + " ";

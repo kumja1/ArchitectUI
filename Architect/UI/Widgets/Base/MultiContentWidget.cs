@@ -1,43 +1,25 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Architect.Common.Interfaces;
-using Architect.UI.Drawing;
 using Cosmos.System.Graphics;
 
 namespace Architect.UI.Base;
 
 public class MultiContentWidget : Widget
 {
-    public new ObservableCollection<IWidget> Content { get => field; set => SetProperty(ref field, value); }
+    /// <summary>
+    /// Gets or sets the collection of content widgets.
+    /// </summary>
+    public new List<IWidget> Content { get => field; set => SetProperty(ref field, value); }
 
-    public MultiContentWidget()
-    {
-        Content.CollectionChanged += OnContentChanged;
-    }
-
-    private void OnContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == NotifyCollectionChangedAction.Add)
-        {
-            foreach (var item in e.NewItems)
-                Add((Widget)item);
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Remove)
-        {
-            foreach (var item in e.OldItems)
-                Remove((Widget)item);
-        }
-        if (e.Action != NotifyCollectionChangedAction.Reset)
-            MarkDirty(true);
-    }
-
+    
     public void Add(Widget widget)
     {
         Content.Add(widget);
-        widget.OnAttachToWidget(new DrawingContext(this, widget));
+        widget.OnAttachToWidget(this);
     }
 
-    public void Remove(Widget widget)
+    public void Remove(IWidget widget)
     {
         Content.Remove(widget);
         widget.Dispose();
@@ -46,11 +28,8 @@ public class MultiContentWidget : Widget
     public void Clear(bool dipose = true)
     {
         foreach (var widget in Content)
-        {
-            widget.Dispose();
-        }
-        
-        Content.Clear();
+            Remove(widget);
+                
         if (dipose)
             Dispose();
     }
