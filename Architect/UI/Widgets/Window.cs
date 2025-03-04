@@ -1,8 +1,9 @@
-using Architect.UI.Enums;
 using Size = Architect.Common.Models.Size;
 using Architect.UI.Drawing;
 using Cosmos.System.Graphics;
-using Architect.Common.Interfaces;
+using Architect.UI.Base;
+using Architect.UI.Layout;
+using Architect.UI.Primitives;
 
 namespace Architect.UI;
 

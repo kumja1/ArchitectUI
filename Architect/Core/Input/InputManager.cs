@@ -1,5 +1,4 @@
 using Architect.Common.Models;
-using Architect.Common.Enums;
 using Architect.Common.Interfaces;
 using Cosmos.System;
 using Console = System.Console;
@@ -7,7 +6,7 @@ using Architect.Core.Input.Events;
 
 namespace Architect.Core.Input;
 
-class InputManager
+sealed class InputManager
 {
     private static InputManager? _instance;
 

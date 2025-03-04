@@ -4,7 +4,7 @@ using Cosmos.System.Graphics;
 
 namespace Architect.Core.Rendering;
 
-sealed class RenderManager
+sealed class RenderManager(Canvas canvas)
 {
     private static RenderManager? _instance;
 
@@ -25,14 +25,9 @@ sealed class RenderManager
         return _instance ??= new RenderManager(canvas);
     }
 
-    private RenderManager(Canvas canvas)
-    {
-        Canvas = canvas;
-    }
-
     private readonly HashSet<IWidget> _dirtWidgets = [];
 
-    private Canvas Canvas { get; init; }
+    private Canvas Canvas { get; init; }  = canvas;
     public void Tick()
     {
         DrawMouse();
