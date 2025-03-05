@@ -1,6 +1,9 @@
-
 using System.Drawing;
+using Architect.Common.Interfaces;
+using Architect.Core.Input;
+using Architect.Core.Input.Events;
 using Architect.UI.Base;
+using Architect.UI.Primitives;
 
 public class TextButton : Widget
 {
@@ -8,27 +11,26 @@ public class TextButton : Widget
 
     public Color TextColor { get => field; set => SetProperty(ref field, value); }
 
-
-    public EventHandler<InputEvent> Clicked;
+    public EventHandler<MouseClickEvent> Clicked;
 
     public TextButton()
     {
         TextColor = Color.Black;
-    }
-
-    public override void Draw(Canvas canvas)
-    {
-        canvas.DrawString(Text, TextColor, Position.X, Position.Y);
-    }
-
-    public override void OnInput(InputEvent input)
-    {
-        if (input is MouseInputEvent mouseInput)
+        Content = new Button
         {
-            if (mouseInput.Type == MouseInputType.LeftButtonDown)
+            Content = new TextBlock
             {
-                Clicked?.Invoke(this, input);
+                TextColor = TextColor,
+                Text = Text,
             }
-        }
+        };
     }
+
+    public override void OnAttachToWidget(IWidget parent)
+    {
+        base.OnAttachToWidget(parent);
+        InputManager.Instance.RegisterMouseInput(this, InputType.MouseClick, Clicked);
+    }
+
+
 }

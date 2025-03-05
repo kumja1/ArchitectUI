@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace Architect.Common.Utils;
+namespace Architect.Common.Utilities;
 
 static class ColorHelper
 {

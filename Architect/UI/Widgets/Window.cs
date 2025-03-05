@@ -4,6 +4,7 @@ using Cosmos.System.Graphics;
 using Architect.UI.Base;
 using Architect.UI.Layout;
 using Architect.UI.Primitives;
+using System.Drawing;
 
 namespace Architect.UI;
 
@@ -12,22 +13,21 @@ public class Window : Widget
     public Size MaxSize { get; init; }
     public Size MinSize { get; init; }
     public Size CurrentSize { get; private set; }
-    private DockPanel MainContent { get => field; set => SetProperty(ref field, value); }
+    private DockPanel ContentCore { get => field; set => SetProperty(ref field, value); }
 
 
-     protected Window()
+    protected Window()
     {
         MinSize = new Size(100, 100);
         MaxSize = new Size(800, 600);
-        Context = new DrawingContext(this, Content);
 
-        Button? closeButton = new()
+        TextButton? closeButton = new()
         {
             Text = "Close",
             Size = new Size(100, 30),
         };
 
-        Button maximizeButton = new()
+        TextButton maximizeButton = new()
         {
             Text = "Maximize",
         };
@@ -35,7 +35,7 @@ public class Window : Widget
         closeButton.Clicked += (_, _) => OnWindowClose();
         maximizeButton.Clicked += (_, _) => OnWindowMaximize();
 
-        MainContent = new DockPanel
+        ContentCore = new DockPanel
         {
             Content = [
                 new DockPanel.Item {
@@ -60,7 +60,7 @@ public class Window : Widget
     }
 
 
-    public override void Draw(Canvas canvas) => MainContent.Draw(canvas);
+    public override void Draw(Canvas canvas) => ContentCore.Draw(canvas);
 
     public virtual void OnWindowClose() => Dispose();
 
@@ -74,8 +74,8 @@ public class Window : Widget
 
     public override void Dispose()
     {
-        MainContent.Dispose();
-        Context.Dispose();
+        base.Dispose();
+        ContentCore.Dispose();
     }
 
 }

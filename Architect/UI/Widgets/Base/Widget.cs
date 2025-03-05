@@ -1,25 +1,23 @@
 using Architect.Common.Models;
 using Architect.Common.Interfaces;
-using Architect.Common.Utils;
+using Architect.Common.Utilities;
 using Architect.Core.Rendering;
 using Size = Architect.Common.Models.Size;
 using Cosmos.System.Graphics;
 using Architect.UI.Layout;
+using System.Drawing;
 
 namespace Architect.UI.Base;
 
 public abstract class Widget : IDisposable, IWidget
 {
-    public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Center;
-    public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
+    private bool _isDirty;
 
-    private bool IsDirty { get; set; }
+    public HorizontalAlignment HorizontalAlignment { get => field; set => SetProperty(ref field, value); }
 
-    private protected IWidget Parent
-    {
-        get => field;
-        set => SetProperty(ref field, value);
-    }
+    public VerticalAlignment VerticalAlignment { get => field; set => SetProperty(ref field, value); }
+
+    private protected IWidget Parent;
 
     public bool IsVisible { get; protected set; }
     public int ZIndex
@@ -46,9 +44,18 @@ public abstract class Widget : IDisposable, IWidget
         set => SetProperty(ref field, value);
     }
 
+    public Color BackgroundColor
+    {
+        get => field;
+        set => SetProperty(ref field, value);
+    }
+
     public Widget()
     {
         Position = Vector2.Zero;
+        HorizontalAlignment = HorizontalAlignment.Left;
+        VerticalAlignment = VerticalAlignment.Top;
+        Size = new Size(100, 100);
     }
 
 
@@ -87,7 +94,11 @@ public abstract class Widget : IDisposable, IWidget
         MarkDirty(false);
     }
 
-    public virtual void Draw(Canvas canvas) => Content.Draw(canvas);
+    public virtual void Draw(Canvas canvas)
+    {
+        canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
+        Content.Draw(canvas);
+    }
 
     protected void SetProperty<T>(ref T field, T value)
     {
@@ -99,7 +110,14 @@ public abstract class Widget : IDisposable, IWidget
                 field = (T)(object)currentWidget;
             }
             else
+            {
+                if (field is HorizontalAlignment || field is VerticalAlignment)
+                {
+                    Arrange(Parent);
+                }
+
                 field = value;
+            }
 
             MarkDirty(true);
         }
@@ -107,7 +125,7 @@ public abstract class Widget : IDisposable, IWidget
 
     private bool ShouldRedraw(object currentValue, object newValue)
     {
-        if (newValue == null || EqualityComparer<object>.Default.Equals(currentValue, newValue) || IsDirty || !IsVisible) return false;
+        if (newValue == null || EqualityComparer<object>.Default.Equals(currentValue, newValue) || _isDirty || !IsVisible) return false;
         if (currentValue is Widget widget && newValue is Widget newWidget && (widget.IsAncestor(newWidget) || newWidget.IsAncestor(widget))) return false;
 
         return true;
@@ -130,11 +148,10 @@ public abstract class Widget : IDisposable, IWidget
 
     public virtual void MarkDirty(bool dirty)
     {
-        IsDirty = dirty;
+        _isDirty = dirty;
         if (dirty)
             RenderManager.Instance.ScheduleRedraw(this);
     }
-
 
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
 

@@ -1,9 +1,8 @@
 using Architect.Common.Models;
-using Architect.Common.Utils;
+using Architect.Common.Utilities;
 using Architect.Common.Interfaces;
 using Cosmos.System.Graphics;
 using Architect.UI.Base;
-using Architect.UI.Primitives;
 
 namespace Architect.UI.Layout;
 
@@ -18,6 +17,8 @@ public class DockPanel : MultiContentWidget
         base.Arrange(parent);
         foreach (Widget item in Content.Cast<Widget>())
         {
+            item.OnAttachToWidget(this);
+            
             item.Position = item.VerticalAlignment switch
             {
                 VerticalAlignment.Top => item.Position with { Y = AlignmentHelper.TopCenter(item.Size, Size).Y + Spacing.Height },
@@ -31,8 +32,6 @@ public class DockPanel : MultiContentWidget
                 HorizontalAlignment.Right => item.Position with { X = AlignmentHelper.RightCenter(item.Size, Size).X - Spacing.Width },
                 _ or HorizontalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size) with { Y = 0 }
             };
-
-            item.OnAttachToWidget(this);
         }
     }
 

@@ -1,5 +1,4 @@
 using System.Drawing;
-using Architect.Core.Input.Events;
 using Architect.UI.Base;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
@@ -23,8 +22,6 @@ class TextBlock : Widget
     public bool WrapText { get; set; }
 
     public Font Font { get; set; } = PCScreenFont.Default;
-
-    public EventHandler<InputEvent> TextChanged;
 
 
     public TextBlock()

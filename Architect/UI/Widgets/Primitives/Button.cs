@@ -22,6 +22,6 @@ class Button : Widget
     public override void OnDetachFromWidget()
     {
         base.OnDetachFromWidget();
-        InputManager.Instance.Unregister(this, InputType.MouseClick);
+        InputManager.Instance.RemoveInput(this, InputType.MouseClick);
     }
 }

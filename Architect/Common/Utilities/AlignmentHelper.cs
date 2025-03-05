@@ -1,6 +1,6 @@
 using Architect.Common.Models;
 
-namespace Architect.Common.Utils;
+namespace Architect.Common.Utilities;
 
 public static class AlignmentHelper
 {
