@@ -131,7 +131,7 @@ sealed class InputManager
             _ when inputType == InputType.Keyboard && isTargetKey => new KeyboardEvent(key.Key, key.Type, key.KeyChar),
             _ when inputType == InputType.KeyboardPress && key.Type == KeyEvent.KeyEventType.Make && isTargetKey => new KeyboardPressEvent(key.Key, key.Type, key.KeyChar),
             _ when inputType == InputType.KeyboardRelease && key.Type == KeyEvent.KeyEventType.Break && isTargetKey => new KeyboardReleaseEvent(key.Key, key.Type, key.KeyChar),
-            _ when inputType == InputType.KeyboardCombination && keyboardKeys.SequenceEqual(KeyboardEx.PressedKeys) => new KeyboardCombinationEvent(KeyboardEx.PressedKeys),
+            _ when inputType == InputType.KeyboardCombination && keyboardKeys.All(KeyboardEx.IsKeyPressed) => new KeyboardCombinationEvent(keyboardKeys),
             _ => null
         };
     }
@@ -149,7 +149,7 @@ sealed class InputManager
             _ when inputType == InputType.MouseClick && MouseEx.MouseClicked && isInside => new MouseClickEvent(MouseManager.MouseState, mousePosition),
             _ when inputType == InputType.MouseDoubleClick && (DateTime.Now - _lastMouseClick).TotalMilliseconds < 500 => new MouseDoubleClickEvent(MouseManager.MouseState, mousePosition),
             _ when inputType == InputType.MouseClickOut && MouseEx.MouseClicked && !isInside => new MouseClickOutEvent(MouseManager.MouseState, mousePosition),
-            _ when inputType == InputType.MouseLeave && wasInside && isInside => new MouseLeaveEvent(mousePosition),
+            _ when inputType == InputType.MouseLeave && wasInside && !isInside => new MouseLeaveEvent(mousePosition),
             _ when inputType == InputType.MouseEnter && !wasInside && isInside => new MouseEnterEvent(mousePosition),
             _ when inputType == InputType.MouseHover && isInside => new MouseHoverEvent(mousePosition),
             _ when inputType == InputType.MouseDrag && MouseEx.MouseDrag && isInside => new MouseDragEvent(MouseManager.MouseState, mousePosition),

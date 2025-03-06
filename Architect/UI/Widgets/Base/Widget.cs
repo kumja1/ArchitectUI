@@ -11,6 +11,8 @@ namespace Architect.UI.Base;
 
 public abstract class Widget : IDisposable, IWidget
 {
+
+    private static IWidget? _previousUpdatingWidget;
     private bool _isDirty;
 
     public HorizontalAlignment HorizontalAlignment { get => field; set => SetProperty(ref field, value); }
@@ -84,7 +86,11 @@ public abstract class Widget : IDisposable, IWidget
         };
     }
 
-    public virtual void OnDetachFromWidget() { }
+    public virtual Size Measure(Size availableSize)
+    {
+        return Size;
+    }
+
 
     public void BeginDraw(Canvas canvas)
     {
@@ -119,6 +125,12 @@ public abstract class Widget : IDisposable, IWidget
                 field = value;
             }
 
+
+            OnPropertyChanged(nameof(field));
+            if (Parent != null && Parent == _previousUpdatingWidget) // Supress redraw if the parent is the one updating but the change is not related to the parent
+                return;
+
+            _previousUpdatingWidget = this;
             MarkDirty(true);
         }
     }
@@ -153,6 +165,7 @@ public abstract class Widget : IDisposable, IWidget
             RenderManager.Instance.ScheduleRedraw(this);
     }
 
+
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
 
     protected bool IsAncestor<T>() where T : IWidget => GetAncestor(typeof(T)) != null;
@@ -172,6 +185,11 @@ public abstract class Widget : IDisposable, IWidget
         }
         return null;
     }
+
+    public virtual void OnPropertyChanged(string propertyName) { }
+
+    public virtual void OnDetachFromWidget() { }
+
 
     public override int GetHashCode() => HashCode.Combine(HorizontalAlignment, VerticalAlignment, Parent, IsVisible, ZIndex, Size, Position, Content);
 

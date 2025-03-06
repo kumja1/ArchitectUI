@@ -24,9 +24,9 @@ class TextInput : Widget, IFocusableWidget
 
     public Color BorderColor { get => field; set => SetProperty(ref field, value); } = Color.Black;
 
-    public int FocusThickness { get => field; set => SetProperty(ref field, value); } = 2;
+    public int BorderThickness { get => field; set => SetProperty(ref field, value); } = 2;
 
-    public int FocusMultiplier { get => field; set => SetProperty(ref field, value); } = 2;
+    public int BorderFocusMultiplier { get; set; } = 2;
 
     IWidget IWidget.Content { get; set => SetProperty(ref field, value); }
 
@@ -37,7 +37,7 @@ class TextInput : Widget, IFocusableWidget
 
         Content = new Border
         {
-            OutlineThickness = new Size(FocusThickness, FocusThickness),
+            OutlineThickness = new Size(BorderThickness, BorderThickness),
             BackgroundColor = BackgroundColor,
             OutlineColor = BorderColor,
             Content = InnerTextBlock
@@ -58,13 +58,13 @@ class TextInput : Widget, IFocusableWidget
 
     private void OnMouseClickOut(object? sender, MouseClickOutEvent e)
     {
-        FocusThickness /= FocusMultiplier;
+        BorderThickness /= BorderFocusMultiplier;
         IsFocused = false;
     }
 
     private void OnMouseClick(object? sender, MouseClickEvent e)
     {
-        FocusThickness *= FocusMultiplier;
+        BorderThickness *= BorderFocusMultiplier;
         IsFocused = true;
     }
 
@@ -95,6 +95,25 @@ class TextInput : Widget, IFocusableWidget
         InputManager.Instance.RemoveInput(this);
     }
 
+    public override void Dispose()
+    {
+        base.Dispose();
+        InnerTextBlock.Dispose();
+    }
+
+    public override void OnPropertyChanged(string propertyName) // Propagate changes to the border
+    {
+        base.OnPropertyChanged(propertyName);
+
+        var border = (Border)Content;
+        
+        if (propertyName == nameof(BackgroundColor))
+            border.BackgroundColor = BackgroundColor;
+        else if (propertyName == nameof(BorderColor))
+            border.OutlineColor = BorderColor;
+        else if (propertyName == nameof(BorderThickness))
+            border.OutlineThickness = new Size(BorderThickness, BorderThickness);
+    }
 
     bool IFocusableWidget.IsFocused { get => IsFocused; set => IsFocused = value; }
 }
