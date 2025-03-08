@@ -1,46 +1,51 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using Architect.Common.Interfaces;
 using Cosmos.System.Graphics;
 
-namespace Architect.UI.Base;
+namespace Architect.UI.Widgets.Base;
 
 public class MultiContentWidget : Widget
 {
     /// <summary>
     /// Gets or sets the collection of content widgets.
     /// </summary>
-    public new List<IWidget> Content { get => field; set => SetProperty(ref field, value); }
+    public new List<IWidget>? Content
+    {
+        get => GetProperty<List<IWidget>>(nameof(Content));
+        set => SetProperty(nameof(Content), value);
+    }
 
-    
+
     public void Add(Widget widget)
     {
-        Content.Add(widget);
+        Content?.Add(widget);
         widget.OnAttachToWidget(this);
     }
 
     public void Remove(IWidget widget)
-    {
-        Content.Remove(widget);
+    { 
+        Content?.Remove(widget);
         widget.Dispose();
     }
 
-    public void Clear(bool dipose = true)
-    {
-        foreach (var widget in Content)
-            Remove(widget);
-                
-        if (dipose)
-            Dispose();
-    }
-
-    public override void OnDetachFromWidget() => Clear();
-
     public override void Draw(Canvas canvas)
     {
+        ArgumentNullException.ThrowIfNull(Content, nameof(Content));
+
         foreach (var widget in Content)
         {
             widget.Draw(canvas);
         }
+    }
+
+    public override void Dispose()
+    {
+        ArgumentNullException.ThrowIfNull(Content, nameof(Content));
+
+        foreach (var widget in Content)
+        {
+            widget.Dispose();
+        }
+
+        Content.Clear();
     }
 }

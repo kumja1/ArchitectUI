@@ -4,10 +4,10 @@ using Architect.Common.Interfaces;
 using Cosmos.System;
 using Architect.Core.Input.Events;
 using Architect.Core.Input;
-using Architect.UI.Base;
+using Architect.UI.Widgets.Base;
 using System.Drawing;
 
-namespace Architect.UI.Primitives;
+namespace Architect.UI.Widgets.Primitives;
 
 class TextInput : Widget, IFocusableWidget
 {
@@ -18,17 +18,25 @@ class TextInput : Widget, IFocusableWidget
 
     public TextBlock InnerTextBlock
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<TextBlock>(nameof(InnerTextBlock));
+        set => SetProperty(nameof(InnerTextBlock), value);
     }
 
-    public Color BorderColor { get => field; set => SetProperty(ref field, value); } = Color.Black;
+    public Color BorderColor
+    {
+        get => GetProperty<Color>(nameof(BorderColor));
+        set => SetProperty(nameof(BorderColor), value);
+    }
 
-    public int BorderThickness { get => field; set => SetProperty(ref field, value); } = 2;
+    public int BorderThickness
+    {
+        get => GetProperty<int>(nameof(BorderThickness));
+        set => SetProperty(nameof(BorderThickness), value);
+    }
 
     public int BorderFocusMultiplier { get; set; } = 2;
 
-    IWidget IWidget.Content { get; set => SetProperty(ref field, value); }
+
 
     public TextInput()
     {
@@ -42,6 +50,16 @@ class TextInput : Widget, IFocusableWidget
             OutlineColor = BorderColor,
             Content = InnerTextBlock
         };
+
+        Bind<TextInput, int>(nameof(BorderThickness))
+            .WithConverter(b => new Size(b, b))
+            .To((Border)Content, nameof(Border.OutlineThickness));
+
+        Bind<TextInput, Color>(nameof(BorderColor))
+            .To((Border)Content, nameof(Border.OutlineColor));
+
+        Bind<TextInput, Color>(nameof(BackgroundColor))
+            .To((Border)Content, nameof(Border.BackgroundColor));
     }
 
 
@@ -99,20 +117,6 @@ class TextInput : Widget, IFocusableWidget
     {
         base.Dispose();
         InnerTextBlock.Dispose();
-    }
-
-    public override void OnPropertyChanged(string propertyName) // Propagate changes to the border
-    {
-        base.OnPropertyChanged(propertyName);
-
-        var border = (Border)Content;
-        
-        if (propertyName == nameof(BackgroundColor))
-            border.BackgroundColor = BackgroundColor;
-        else if (propertyName == nameof(BorderColor))
-            border.OutlineColor = BorderColor;
-        else if (propertyName == nameof(BorderThickness))
-            border.OutlineThickness = new Size(BorderThickness, BorderThickness);
     }
 
     bool IFocusableWidget.IsFocused { get => IsFocused; set => IsFocused = value; }

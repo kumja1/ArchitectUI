@@ -4,52 +4,71 @@ using Architect.Common.Utilities;
 using Architect.Core.Rendering;
 using Size = Architect.Common.Models.Size;
 using Cosmos.System.Graphics;
-using Architect.UI.Layout;
+using Architect.UI.Widgets.Layout;
 using System.Drawing;
+using Architect.UI.Widgets.Bindings;
+using System.Linq.Expressions;
 
-namespace Architect.UI.Base;
+namespace Architect.UI.Widgets.Base;
 
 public abstract class Widget : IDisposable, IWidget
 {
 
     private static IWidget? _previousUpdatingWidget;
+
+
     private bool _isDirty;
 
-    public HorizontalAlignment HorizontalAlignment { get => field; set => SetProperty(ref field, value); }
+    public HorizontalAlignment HorizontalAlignment
+    {
+        get => GetProperty<HorizontalAlignment>(nameof(HorizontalAlignment));
+        set => SetProperty(nameof(HorizontalAlignment), value);
+    }
 
-    public VerticalAlignment VerticalAlignment { get => field; set => SetProperty(ref field, value); }
+    public VerticalAlignment VerticalAlignment
+    {
+        get => GetProperty<VerticalAlignment>(nameof(VerticalAlignment));
+        set => SetProperty(nameof(VerticalAlignment), value);
+    }
 
     private protected IWidget Parent;
 
+    private readonly List<IDisposable> _bindings = [];
+
+    private readonly Dictionary<string, object> _properties = [];
+
+
+    public Action<string, object> PropertyChanged { get; set; } = (_, _) => { };
     public bool IsVisible { get; protected set; }
+
     public int ZIndex
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<int>(nameof(ZIndex));
+        set => SetProperty(nameof(ZIndex), value);
     }
 
     public Size Size
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Size>(nameof(Size));
+        set => SetProperty(nameof(Size), value);
     }
 
     public Vector2 Position
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Vector2>(nameof(Position));
+        set => SetProperty(nameof(Position), value);
     }
 
-    public IWidget Content
+    public IWidget? Content
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<IWidget?>(nameof(Content));
+        set => SetProperty(nameof(Content), value);
     }
 
     public Color BackgroundColor
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Color>(nameof(BackgroundColor));
+        set => SetProperty(nameof(BackgroundColor), value);
     }
 
     public Widget()
@@ -86,11 +105,7 @@ public abstract class Widget : IDisposable, IWidget
         };
     }
 
-    public virtual Size Measure(Size availableSize)
-    {
-        return Size;
-    }
-
+    public virtual Size Measure(Size availableSize) => Size;
 
     public void BeginDraw(Canvas canvas)
     {
@@ -103,11 +118,20 @@ public abstract class Widget : IDisposable, IWidget
     public virtual void Draw(Canvas canvas)
     {
         canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
-        Content.Draw(canvas);
+        Content!.Draw(canvas);
     }
 
-    protected void SetProperty<T>(ref T field, T value)
+    public void SetProperty<T>(string name, T value)
     {
+        var field = GetProperty<T>(name);
+
+        if (field == null)
+        {
+            _properties.Add(name, value);
+            PropertyChanged.Invoke(name, value);
+            return;
+        }
+
         if (ShouldRedraw(field!, value!))
         {
             if (field is IWidget currentWidget && value is IWidget newWidget)
@@ -126,7 +150,7 @@ public abstract class Widget : IDisposable, IWidget
             }
 
 
-            OnPropertyChanged(nameof(field));
+            PropertyChanged.Invoke(name, value);
             if (Parent != null && Parent == _previousUpdatingWidget) // Supress redraw if the parent is the one updating but the change is not related to the parent
                 return;
 
@@ -134,6 +158,24 @@ public abstract class Widget : IDisposable, IWidget
             MarkDirty(true);
         }
     }
+
+
+    public T? GetProperty<T>(string name)
+    {
+        try
+        {
+            return _properties.TryGetValue(name, out var currentValue) switch
+            {
+                true => (T)currentValue,
+                false => default
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error getting property {name} from widget {GetType().Name}.", ex);
+        }
+    }
+
 
     private bool ShouldRedraw(object currentValue, object newValue)
     {
@@ -155,6 +197,9 @@ public abstract class Widget : IDisposable, IWidget
     public virtual void Dispose()
     {
         RenderManager.Instance.Erase(this);
+
+        _bindings.ForEach(x => x.Dispose());
+        _bindings.Clear();
         OnDetachFromWidget();
     }
 
@@ -169,6 +214,8 @@ public abstract class Widget : IDisposable, IWidget
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
 
     protected bool IsAncestor<T>() where T : IWidget => GetAncestor(typeof(T)) != null;
+
+    public PropertyBinder<TSource, TValue> Bind<TSource, TValue>(string name, Action<TSource, TValue> setter = null) where TSource : Widget => new((TSource)this, name, _bindings, null, setter);
 
     public T GetRef<T>(ref T target) where T : Widget => target = (T)this;
 
@@ -186,7 +233,6 @@ public abstract class Widget : IDisposable, IWidget
         return null;
     }
 
-    public virtual void OnPropertyChanged(string propertyName) { }
 
     public virtual void OnDetachFromWidget() { }
 

@@ -16,7 +16,10 @@ public interface IWidget : IDisposable
     /// </summary>
     Size Size { get; set; }
 
-    IWidget Content { get; set; }
+    IWidget? Content { get; set; }
+
+    Action<string, object> PropertyChanged { get; set; }
+
 
     /// <summary>
     /// Gets or sets the position of the widget.

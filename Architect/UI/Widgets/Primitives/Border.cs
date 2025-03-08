@@ -3,29 +3,29 @@ using Architect.Common.Utilities;
 using Size = Architect.Common.Models.Size;
 using Cosmos.System.Graphics;
 using Architect.UI.Drawing;
-using Architect.UI.Base;
+using Architect.UI.Widgets.Base;
 
-namespace Architect.UI.Primitives;
+namespace Architect.UI.Widgets.Primitives;
 
 class Border : Widget
 {
 
     public Color OutlineColor
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Color>(nameof(OutlineColor));
+        set => SetProperty(nameof(OutlineColor), value);
     }
 
     public Size OutlineThickness
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Size>(nameof(OutlineThickness));
+        set => SetProperty(nameof(OutlineThickness), value);
     }
 
     public int OutlineRadius
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<int>(nameof(OutlineRadius));
+        set => SetProperty(nameof(OutlineRadius), value);
     }
 
     public Border()
@@ -47,6 +47,6 @@ class Border : Widget
         else
             canvas.DrawRoundedRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height, OutlineRadius);
 
-        Content.Draw(canvas);
+        Content?.Draw(canvas);
     }
 }

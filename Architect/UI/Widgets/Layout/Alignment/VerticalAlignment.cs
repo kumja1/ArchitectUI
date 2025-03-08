@@ -1,4 +1,4 @@
-namespace Architect.UI.Layout;
+namespace Architect.UI.Widgets.Layout;
 
 public enum VerticalAlignment
 {

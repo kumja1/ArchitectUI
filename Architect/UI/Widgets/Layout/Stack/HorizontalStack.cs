@@ -1,7 +1,7 @@
 using Architect.Common.Interfaces;
 using Architect.Common.Utilities;
 
-namespace Architect.UI.Layout;
+namespace Architect.UI.Widgets.Layout;
 
 class HorizontalStack : Stack
 {

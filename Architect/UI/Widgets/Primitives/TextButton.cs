@@ -2,19 +2,29 @@ using System.Drawing;
 using Architect.Common.Interfaces;
 using Architect.Core.Input;
 using Architect.Core.Input.Events;
-using Architect.UI.Base;
-using Architect.UI.Primitives;
+using Architect.UI.Widgets.Base;
+
+namespace Architect.UI.Widgets.Primitives;
 
 public class TextButton : Widget
 {
-    public string Text { get => field; set => SetProperty(ref field, value); }
+    public string Text
+    {
+        get => GetProperty<string>(nameof(Text));
+        set => SetProperty(nameof(Text), value);
+    }
 
-    public Color TextColor { get => field; set => SetProperty(ref field, value); }
+    public Color TextColor
+    {
+        get => GetProperty<Color>(nameof(TextColor));
+        set => SetProperty(nameof(TextColor), value);
+    }
 
     public EventHandler<MouseClickEvent> Clicked;
 
     public TextButton()
     {
+        Text = "Click Me!";
         TextColor = Color.Black;
         Content = new Button
         {

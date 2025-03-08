@@ -1,22 +1,22 @@
 using System.Drawing;
-using Architect.UI.Base;
+using Architect.UI.Widgets.Base;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 
-namespace Architect.UI.Primitives;
+namespace Architect.UI.Widgets.Primitives;
 
 class TextBlock : Widget
 {
     public string Text
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<string>(nameof(Text));
+        set => SetProperty(nameof(Text), value);
     }
 
     public Color TextColor
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Color>(nameof(TextColor));
+        set => SetProperty(nameof(TextColor), value);
     }
 
     public bool WrapText { get; set; }
