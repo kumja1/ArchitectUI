@@ -7,7 +7,6 @@ using Cosmos.System.Graphics;
 using Architect.UI.Widgets.Layout;
 using System.Drawing;
 using Architect.UI.Widgets.Bindings;
-using System.Linq.Expressions;
 
 namespace Architect.UI.Widgets.Base;
 
@@ -211,15 +210,16 @@ public abstract class Widget : IDisposable, IWidget
     }
 
 
-    protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
 
-    protected bool IsAncestor<T>() where T : IWidget => GetAncestor(typeof(T)) != null;
 
     public PropertyBinder<TSource, TValue> Bind<TSource, TValue>(string name, Action<TSource, TValue> setter = null) where TSource : Widget => new((TSource)this, name, _bindings, null, setter);
 
     public T GetRef<T>(ref T target) where T : Widget => target = (T)this;
 
 
+    protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
+
+    protected bool IsAncestor<T>() where T : IWidget => GetAncestor(typeof(T)) != null;
     protected T? GetAncestor<T>() where T : class, IWidget => GetAncestor(typeof(T)) as T;
 
     protected IWidget? GetAncestor(Type type)
@@ -239,5 +239,9 @@ public abstract class Widget : IDisposable, IWidget
 
     public override int GetHashCode() => HashCode.Combine(HorizontalAlignment, VerticalAlignment, Parent, IsVisible, ZIndex, Size, Position, Content);
 
-    public bool HitTest(Vector2 position) => IsVisible && Position.X >= position.X && Position.X <= position.X + Size.Width && Position.Y >= position.Y && Position.Y <= position.Y + Size.Height;
+    public bool HitTest(Vector2 position) =>
+        position.X >= Position.X
+        && position.X <= Position.X + Size.Width
+        && position.Y >= Position.Y
+        && position.Y <= Position.Y + Size.Height;
 }

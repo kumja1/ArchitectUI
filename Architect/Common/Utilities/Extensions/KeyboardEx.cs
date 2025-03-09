@@ -3,6 +3,7 @@ using Cosmos.System;
 public static class KeyboardEx
 {
 
+    private static KeyEvent _lastKeyEvent;
 
 
     /// <summary>
@@ -13,8 +14,10 @@ public static class KeyboardEx
     public static bool TryReadKey(out KeyEvent Key)
     {
         if (KeyboardManager.TryReadKey(out Key))
+        {
+            _lastKeyEvent = Key;
             return true;
-
+        }
         Key = default;
         return false;
     }
@@ -33,5 +36,17 @@ public static class KeyboardEx
         return null;
     }
 
-    public static bool IsKeyPressed(ConsoleKeyEx key) => TryReadKey(out KeyEvent keyEvent) && keyEvent.Key == key;
+    public static bool IsKeyBeingPressed(ConsoleKeyEx key) => TryReadKey(out KeyEvent keyEvent) && keyEvent.Key == key;
+
+    public static bool CheckKeyPress()
+    {
+        if (_lastKeyEvent.Type == KeyEvent.KeyEventType.Make)
+        {
+            if (TryReadKey(out KeyEvent currentEvent) && currentEvent.Key == _lastKeyEvent.Key)
+            {
+                return currentEvent.Type == KeyEvent.KeyEventType.Break;
+            }
+        }
+        return false;
+    }
 }

@@ -25,16 +25,16 @@ sealed class RenderManager(Canvas canvas)
         return _instance ??= new RenderManager(canvas);
     }
 
-    private readonly SortedSet<IWidget> _dirtyWidgets = new(new ZIndexComparer());
+    private readonly PriorityQueue<IWidget, int> _dirtyWidgets = new();
 
-    private Canvas Canvas { get; init; }  = canvas;
+    private Canvas Canvas { get; init; } = canvas;
     public void Tick()
     {
         DrawMouse();
         if (_dirtyWidgets.Count == 0)
             return;
 
-        foreach (var widget in _dirtyWidgets)
+        while (_dirtyWidgets.Count > 0 && _dirtyWidgets.TryDequeue(out var widget, out _))
         {
             Erase(widget);
             widget.BeginDraw(Canvas);
@@ -49,8 +49,10 @@ sealed class RenderManager(Canvas canvas)
 
     public void ScheduleRedraw(IWidget widget)
     {
-        if (widget.IsVisible && widget.ZIndex > 0 && !_dirtyWidgets.Contains(widget))
-            _dirtyWidgets.Add(widget);
+        if (widget.IsVisible && widget.ZIndex > 0)
+        {
+            _dirtyWidgets.Enqueue(widget, widget.ZIndex);
+        }
     }
 
     public void Erase(IWidget widget) => Canvas.DrawRectangle(Color.Transparent, widget.Position.X, widget.Position.Y, widget.Size.Width, widget.Size.Height);
