@@ -1,3 +1,5 @@
+using Architect.Core.Input;
+using Architect.Core.Rendering;
 using Architect.UI;
 using Cosmos.System;
 using Cosmos.System.Graphics;
@@ -9,19 +11,20 @@ class Architect
 {
     private const int FrameTime = 1000 / 60;
 
-    public static void Initialize() => Intialize(FullScreenCanvas.GetFullScreenCanvas());
+    public static void Initialize() => Initialize(FullScreenCanvas.GetFullScreenCanvas());
 
-    public static void Intialize(Canvas canvas)
+    public static void Initialize(Canvas canvas, ScanMapBase keyboardLayout = null)
     {
+        keyboardLayout ??= new USStandardLayout();
         RenderManager.Initialize(canvas);
-        KeyboardManager.SetKeyLayout(new USStandardLayout());
+        InputManager.Initialize(keyboardLayout);
     }
 
     public static void Tick()
     {
         var start = DateTime.Now;
-        InputManager.Tick();
-        RenderManager.Tick();
+        InputManager.Instance.Tick();
+        RenderManager.Instance.Tick();
 
         var elasped = (DateTime.Now - start).TotalMilliseconds;
         if (elasped < FrameTime)

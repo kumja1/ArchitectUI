@@ -1,39 +1,57 @@
-using Architect.Core;
-using Architect.UI.Enums;
-using Architect.Common.Interfaces;
-using Architect.UI.Models;
 using Size = Architect.Common.Models.Size;
+using Cosmos.System.Graphics;
+using Architect.UI.Widgets.Base;
+using Architect.UI.Widgets.Layout;
+using Architect.UI.Widgets.Primitives;
 
-namespace Architect.UI;
+namespace Architect.UI.Widgets;
 
 public class Window : Widget
 {
-    public Size MaxSize { get; init; }
-    public Size MinSize { get; init; }
-    public Size CurrentSize { get; private set; }
-    private DockPanel MainContent { get => field; set => SetProperty(ref field, value); }
+    public Size MaxSize
+    {
+        get => GetProperty<Size>(nameof(MaxSize));
+        init => SetProperty(nameof(MaxSize), value);
+    }
 
-    private readonly HashSet<IWidget> _dirtyWidgets = [];
+    public Size MinSize
+    {
+        get => GetProperty<Size>(nameof(MinSize));
+        init => SetProperty(nameof(MinSize), value);
+    }
 
-    private protected Window()
+    public Size CurrentSize
+    {
+        get => GetProperty<Size>(nameof(CurrentSize));
+        private set => SetProperty(nameof(CurrentSize), value);
+    }
+
+    private DockPanel ContentCore
+    {
+        get => GetProperty<DockPanel>(nameof(ContentCore));
+        set => SetProperty(nameof(ContentCore), value);
+    }
+
+    protected Window()
     {
         MinSize = new Size(100, 100);
         MaxSize = new Size(800, 600);
-        Context = new DrawingContext(this, Content);
 
-        Button? closeButton = new()
+        TextButton? closeButton = new()
         {
             Text = "Close",
             Size = new Size(100, 30),
         };
 
-        Button maximizeButton = new()
+        TextButton maximizeButton = new()
         {
             Text = "Maximize",
         };
 
+        closeButton.Clicked += (_, _) => OnWindowClose();
+        maximizeButton.Clicked += (_, _) => OnWindowMaximize();
 
-        MainContent = new DockPanel
+        ContentCore = new DockPanel
         {
             Content = [
                 new DockPanel.Item {
@@ -57,8 +75,7 @@ public class Window : Widget
         };
     }
 
-
-    public override void Draw() => MainContent.Draw();
+    public override void Draw(Canvas canvas) => ContentCore.Draw(canvas);
 
     public virtual void OnWindowClose() => Dispose();
 
@@ -69,21 +86,9 @@ public class Window : Widget
 
     public virtual void OnWindowMaximize() { }
 
-
     public override void Dispose()
     {
-        MainContent.Dispose();
-        Context.Dispose();
+        base.Dispose();
+        ContentCore.Dispose();
     }
-
-    internal void AddDirtyWidget(Widget widget)
-    {
-        if (_dirtyWidgets.Add(widget))
-        {
-            RenderManager.ScheduleWindowUpdate(this);
-        }
-    }
-
-    public void EraseWidget(Widget widget) =>  RenderManager.ClearArea(widget.Position, widget.Size);
-
 }

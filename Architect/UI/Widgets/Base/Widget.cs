@@ -1,166 +1,247 @@
 using Architect.Common.Models;
-using Architect.UI.Enums;
 using Architect.Common.Interfaces;
-using Architect.UI.Models;
-using Architect.Common.Utils;
+using Architect.Common.Utilities;
+using Architect.Core.Rendering;
+using Size = Architect.Common.Models.Size;
+using Cosmos.System.Graphics;
+using Architect.UI.Widgets.Layout;
+using System.Drawing;
+using Architect.UI.Widgets.Bindings;
 
-namespace Architect.UI;
+namespace Architect.UI.Widgets.Base;
 
-public abstract class Widget : IDisposable, IWidget, IEquatable<Widget>
+public abstract class Widget : IDisposable, IWidget
 {
-    public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Center;
-    public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Center;
-    public IDrawingContext Context { get; set; } = DrawingContext.Empty;
-    public bool IsVisible
+
+    private static IWidget? _previousUpdatingWidget;
+
+
+    private bool _isDirty;
+
+    public HorizontalAlignment HorizontalAlignment
     {
-        get; protected set;
+        get => GetProperty<HorizontalAlignment>(nameof(HorizontalAlignment));
+        set => SetProperty(nameof(HorizontalAlignment), value);
     }
+
+    public VerticalAlignment VerticalAlignment
+    {
+        get => GetProperty<VerticalAlignment>(nameof(VerticalAlignment));
+        set => SetProperty(nameof(VerticalAlignment), value);
+    }
+
+    private protected IWidget Parent;
+
+    private readonly List<IDisposable> _bindings = [];
+
+    private readonly Dictionary<string, object> _properties = [];
+
+
+    public Action<string, object> PropertyChanged { get; set; } = (_, _) => { };
+    public bool IsVisible { get; protected set; }
+
     public int ZIndex
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<int>(nameof(ZIndex));
+        set => SetProperty(nameof(ZIndex), value);
     }
-
 
     public Size Size
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Size>(nameof(Size));
+        set => SetProperty(nameof(Size), value);
     }
 
     public Vector2 Position
     {
-        get => field;
-        set => SetProperty(ref field, value);
+        get => GetProperty<Vector2>(nameof(Position));
+        set => SetProperty(nameof(Position), value);
     }
 
-    public IWidget Content
+    public IWidget? Content
     {
-        get => Context.Child;
-        set => SetProperty(ref field, value);
+        get => GetProperty<IWidget?>(nameof(Content));
+        set => SetProperty(nameof(Content), value);
     }
 
-    private bool isDirty;
+    public Color BackgroundColor
+    {
+        get => GetProperty<Color>(nameof(BackgroundColor));
+        set => SetProperty(nameof(BackgroundColor), value);
+    }
 
     public Widget()
     {
         Position = Vector2.Zero;
+        HorizontalAlignment = HorizontalAlignment.Left;
+        VerticalAlignment = VerticalAlignment.Top;
+        Size = new Size(100, 100);
     }
 
 
-    public virtual void OnAttachToWidget(IDrawingContext context)
+    public virtual void OnAttachToWidget(IWidget parent)
+    {
+        Arrange(parent);
+        Parent = parent;
+    }
+
+    public virtual void Arrange(IWidget parent)
     {
         Position = HorizontalAlignment switch
         {
             HorizontalAlignment.Left => Position with { X = 0 },
-            HorizontalAlignment.Center => AlignmentHelper.Center(context.Size, Size),
-            HorizontalAlignment.Right => AlignmentHelper.Right(context.Size, Size),
+            HorizontalAlignment.Center => AlignmentHelper.Center(parent.Size, Size),
+            HorizontalAlignment.Right => AlignmentHelper.Right(parent.Size, Size),
             _ => Position
         };
 
         Position = VerticalAlignment switch
         {
             VerticalAlignment.Top => Position with { Y = 0 },
-            VerticalAlignment.Center => AlignmentHelper.Center(context.Size, Size),
-            VerticalAlignment.Bottom => AlignmentHelper.Bottom(context.Size, Size),
+            VerticalAlignment.Center => AlignmentHelper.Center(parent.Size, Size),
+            VerticalAlignment.Bottom => AlignmentHelper.Bottom(parent.Size, Size),
             _ => Position
         };
-
     }
 
-    public virtual void OnDetachFromWidget() { }
+    public virtual Size Measure(Size availableSize) => Size;
 
-    public void BeginDraw()
+    public void BeginDraw(Canvas canvas)
     {
-        if (Content == null) throw new ArgumentNullException(nameof(Content), "Content cannot be null when drawing the widget.");
-        Erase();
-        Draw();
+        if (Content == null) throw new ArgumentNullException(nameof(canvas), "Content cannot be null when drawing the widget.");
+
+        Draw(canvas);
         MarkDirty(false);
     }
 
-    public virtual void Draw() => Content.Draw();
-
-
-    protected void SetProperty<T>(ref T field, T value)
+    public virtual void Draw(Canvas canvas)
     {
+        canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
+        Content!.Draw(canvas);
+    }
+
+    public void SetProperty<T>(string name, T value)
+    {
+        var field = GetProperty<T>(name);
+
+        if (field == null)
+        {
+            _properties.Add(name, value);
+            PropertyChanged.Invoke(name, value);
+            return;
+        }
+
         if (ShouldRedraw(field!, value!))
         {
-            if (value is IWidget widget)
-                AttachContent(widget);
+            if (field is IWidget currentWidget && value is IWidget newWidget)
+            {
+                AttachContent(ref currentWidget, newWidget);
+                field = (T)(object)currentWidget;
+            }
             else
+            {
+                if (field is HorizontalAlignment || field is VerticalAlignment)
+                {
+                    Arrange(Parent);
+                }
+
                 field = value;
+            }
+
+
+            PropertyChanged.Invoke(name, value);
+            if (Parent != null && Parent == _previousUpdatingWidget) // Supress redraw if the parent is the one updating but the change is not related to the parent
+                return;
+
+            _previousUpdatingWidget = this;
+            MarkDirty(true);
         }
     }
 
-    private bool ShouldRedraw(object currentValue, object newValue)
-    {
-        if (EqualityComparer<object>.Default.Equals(currentValue, newValue) || newValue == null || isDirty || !IsVisible) return false;
-        if (currentValue is Widget widget && newValue is Widget newWidget && (widget.IsAncestor(newWidget) || newWidget.IsAncestor(widget))) return false;
 
-        MarkDirty(true);
-        return isDirty;
+    public T? GetProperty<T>(string name)
+    {
+        try
+        {
+            return _properties.TryGetValue(name, out var currentValue) switch
+            {
+                true => (T)currentValue,
+                false => default
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error getting property {name} from widget {GetType().Name}.", ex);
+        }
     }
 
-    private void AttachContent(IWidget? widget)
-    {
-        Content?.Dispose();
 
+    private bool ShouldRedraw(object currentValue, object newValue)
+    {
+        if (newValue == null || EqualityComparer<object>.Default.Equals(currentValue, newValue) || _isDirty || !IsVisible) return false;
+        if (currentValue is Widget widget && newValue is Widget newWidget && (widget.IsAncestor(newWidget) || newWidget.IsAncestor(widget))) return false;
+
+        return true;
+    }
+
+    private void AttachContent(ref IWidget currentValue, IWidget? widget)
+    {
         if (widget == null) return;
-        Context = new DrawingContext(this, widget);
-        widget.OnAttachToWidget(Context);
+        currentValue?.Dispose();
+
+        widget.OnAttachToWidget(this);
+        currentValue = widget;
     }
 
     public virtual void Dispose()
     {
-        Erase();
+        RenderManager.Instance.Erase(this);
+
+        _bindings.ForEach(x => x.Dispose());
+        _bindings.Clear();
         OnDetachFromWidget();
-        Context.Dispose();
     }
 
     public virtual void MarkDirty(bool dirty)
     {
-        isDirty = dirty;
+        _isDirty = dirty;
         if (dirty)
-            Context.RootWindow.AddDirtyWidget(this);
+            RenderManager.Instance.ScheduleRedraw(this);
     }
 
-    public T GetRef<T>(ref T target) where T : Widget => target = (T)this;
 
-    public void Erase() => Context.RootWindow.Erase(Position, Size);
+
+
+    public PropertyBinder<TSource, TValue> Bind<TSource, TValue>(string name, Action<TSource, TValue> setter = null) where TSource : Widget => new((TSource)this, name, _bindings, null, setter);
+
+    public T GetRef<T>(ref T target) where T : Widget => target = (T)this;
 
 
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
 
     protected bool IsAncestor<T>() where T : IWidget => GetAncestor(typeof(T)) != null;
-
     protected T? GetAncestor<T>() where T : class, IWidget => GetAncestor(typeof(T)) as T;
 
     protected IWidget? GetAncestor(Type type)
     {
-        var widget = Context.Parent;
+        var widget = Parent;
         while (widget != null)
         {
             if (widget.GetType() == type) return widget;
-            widget = widget.Context.Parent;
+            widget = ((Widget)widget).Parent;
         }
         return null;
     }
 
-    public bool Equals(Widget? other)
-    {
-        if (other == null) return false;
-        return HorizontalAlignment == other.HorizontalAlignment &&
-               VerticalAlignment == other.VerticalAlignment &&
-               Context == other.Context &&
-               IsVisible == other.IsVisible &&
-               ZIndex == other.ZIndex &&
-               Size.Equals(other.Size) &&
-               Position.Equals(other.Position) &&
-               Equals(Content, other.Content);
-    }
 
-    public override bool Equals(object? obj) => Equals(obj as Widget);
-    public override int GetHashCode() => HashCode.Combine(HorizontalAlignment, VerticalAlignment, Context, IsVisible, ZIndex, Size, Position, Content);
+    public virtual void OnDetachFromWidget() { }
 
-    public bool HitTest(Vector2 position) => IsVisible && PositionHelper.PositionWithin(position, Size, Position);
+
+    public override int GetHashCode() => HashCode.Combine(HorizontalAlignment, VerticalAlignment, Parent, IsVisible, ZIndex, Size, Position, Content);
+
+    public bool HitTest(Vector2 position) =>
+        position.X >= Position.X
+        && position.X <= Position.X + Size.Width
+        && position.Y >= Position.Y
+        && position.Y <= Position.Y + Size.Height;
 }

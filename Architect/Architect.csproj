@@ -15,10 +15,15 @@
   <ItemGroup>
    <PackageReference Include="Cosmos.System2" Version="0-*" NoWarn="NU1604" />
     <PackageReference Include="Cosmos.Plugs" Version="0-*" NoWarn="NU1604" />
+    <PackageReference Include="Polyfill" Version="7.20.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="PolySharp">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.6.0" />
    </ItemGroup>
   
 </Project>

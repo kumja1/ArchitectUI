@@ -1,68 +1,51 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using Architect.Common.Interfaces;
-using Architect.UI.Models;
+using Cosmos.System.Graphics;
 
-namespace Architect.UI;
+namespace Architect.UI.Widgets.Base;
 
 public class MultiContentWidget : Widget
 {
-    public new ObservableCollection<IWidget> Content { get => field; set => SetProperty(ref field, value); }
-
-    public MultiContentWidget()
+    /// <summary>
+    /// Gets or sets the collection of content widgets.
+    /// </summary>
+    public new List<IWidget>? Content
     {
-        Content.CollectionChanged += OnContentChanged;
+        get => GetProperty<List<IWidget>>(nameof(Content));
+        set => SetProperty(nameof(Content), value);
     }
 
-    private void OnContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (e.Action == NotifyCollectionChangedAction.Add)
-        {
-            foreach (var item in e.NewItems)
-            {
-                Add((Widget)item);
-            }
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Remove)
-        {
-            foreach (var item in e.OldItems)
-            {
-                Remove((Widget)item);
-            }
-        }
-        if (e.Action != NotifyCollectionChangedAction.Reset)
-            MarkDirty(true);
-    }
 
     public void Add(Widget widget)
     {
-        var context = new DrawingContext(this, widget);
-        widget.Context = context;
-        widget.OnAttachToWidget(context);
+        Content?.Add(widget);
+        widget.OnAttachToWidget(this);
     }
 
-    public void Remove(Widget widget)
-    {
-        Content.Remove(widget);
+    public void Remove(IWidget widget)
+    { 
+        Content?.Remove(widget);
         widget.Dispose();
     }
 
-    public void Clear()
+    public override void Draw(Canvas canvas)
     {
+        ArgumentNullException.ThrowIfNull(Content, nameof(Content));
+
+        foreach (var widget in Content)
+        {
+            widget.Draw(canvas);
+        }
+    }
+
+    public override void Dispose()
+    {
+        ArgumentNullException.ThrowIfNull(Content, nameof(Content));
+
         foreach (var widget in Content)
         {
             widget.Dispose();
         }
+
         Content.Clear();
-    }
-
-    public override void OnDetachFromWidget() => Clear();
-
-    public override void Draw()
-    {
-        foreach (var widget in Content)
-        {
-            widget.Draw();
-        }
     }
 }
