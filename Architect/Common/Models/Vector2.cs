@@ -10,7 +10,7 @@ public struct Vector2(int X, int Y)
 
     public static Vector2 Infinite => new(int.MaxValue, int.MaxValue);
 
-    
+
 
     public static Vector2 operator *(Vector2 left, int right) => new(left.X * right, left.Y * right);
 

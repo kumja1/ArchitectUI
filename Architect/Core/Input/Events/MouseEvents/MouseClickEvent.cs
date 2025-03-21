@@ -9,5 +9,4 @@ namespace Architect.Core.Input.Events;
 /// </summary>
 /// <param name="Button">The state of the mouse button that was clicked.</param>
 /// <param name="Position">The position of the mouse cursor at the time of the click.</param>
-public record MouseClickEvent(MouseState Button, Vector2 Position) :  InputEvent(Position);
- 
+public record MouseClickEvent(MouseState Button, Vector2 Position) : MouseEvent(Button, Position);

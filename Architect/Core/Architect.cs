@@ -13,7 +13,7 @@ class Architect
 
     public static void Initialize() => Initialize(FullScreenCanvas.GetFullScreenCanvas());
 
-    public static void Initialize(Canvas canvas, ScanMapBase keyboardLayout = null)
+    public static void Initialize(Canvas canvas, ScanMapBase? keyboardLayout = null)
     {
         keyboardLayout ??= new USStandardLayout();
         RenderManager.Initialize(canvas);

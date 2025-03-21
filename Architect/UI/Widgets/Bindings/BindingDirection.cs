@@ -14,6 +14,5 @@ public enum BindingDirection
     /// <summary>
     /// Data flows in both directions, from the source to the target and from the target to the source.
     /// </summary>
-    TwoWay
+    TwoWay,
 }
-

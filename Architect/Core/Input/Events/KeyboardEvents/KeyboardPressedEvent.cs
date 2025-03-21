@@ -3,7 +3,7 @@ using Cosmos.System;
 namespace Architect.Core.Input.Events;
 
 /// <summary>
-/// Represents an event that occurs when a keyboard key is pressed.
+/// Represents an event that occurs while a key is being pressed on the keyboard.
 /// </summary>
 /// <param name="Key">The key that was pressed.</param>
 /// <param name="Type">The type of the key event.</param>

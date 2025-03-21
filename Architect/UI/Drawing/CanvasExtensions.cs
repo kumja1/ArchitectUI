@@ -8,8 +8,19 @@ namespace Architect.UI.Drawing;
 
 public static class CanvasExtensions
 {
-    public static void DrawString(this Canvas canvas, string text, Font font, Color color, int x, int y, int width, int height)
+    public static void DrawString(
+        this Canvas canvas,
+        string text,
+        Font font,
+        Color color,
+        int x,
+        int y,
+        Size size
+    )
     {
+        var width = size.Width;
+        var height = size.Height;
+
         var sizeX = (float)width / (font.Width * text.Length);
         var sizeY = height / font.Height;
 
@@ -23,10 +34,23 @@ public static class CanvasExtensions
         }
     }
 
+    public static void DrawString(
+        this Canvas canvas,
+        string text,
+        Font font,
+        Color color,
+        Vector2 position,
+        Size size
+    ) => canvas.DrawString(text, font, color, position.X, position.Y, size);
 
-    public static void ClearArea(this Canvas canvas, Size size, Vector2 position, Color? color = null)
+    public static void ClearArea(
+        this Canvas canvas,
+        Size size,
+        Vector2 position,
+        Color? color = null
+    )
     {
-        color ??= Color.Black;  
+        color ??= Color.Black;
         for (var y = 0; y < size.Height; y++)
         {
             for (var x = 0; x < size.Width; x++)
@@ -36,27 +60,82 @@ public static class CanvasExtensions
         }
     }
 
-     public static void DrawRoundedRectangle(
+    public static void DrawRoundedRectangle(
         this Canvas canvas,
         Color color,
         int x,
         int y,
         int width,
         int height,
-        int cornerRadius)
+        int cornerRadius
+    )
     {
         cornerRadius = Math.Min(cornerRadius, Math.Min(width / 2, height / 2));
 
-        canvas.DrawArc(x, y, cornerRadius * 2, cornerRadius * 2,color, 180, 90); 
-        canvas.DrawArc(x + width - cornerRadius * 2, y, cornerRadius * 2, cornerRadius * 2, color,270, 90);
-        canvas.DrawArc(x, y + height - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, color,90, 90); 
-        canvas.DrawArc(x + width - cornerRadius * 2, y + height - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2,color, 0, 90); 
+        canvas.DrawArc(x, y, cornerRadius * 2, cornerRadius * 2, color, 180, 90);
+        canvas.DrawArc(
+            x + width - cornerRadius * 2,
+            y,
+            cornerRadius * 2,
+            cornerRadius * 2,
+            color,
+            270,
+            90
+        );
+        canvas.DrawArc(
+            x,
+            y + height - cornerRadius * 2,
+            cornerRadius * 2,
+            cornerRadius * 2,
+            color,
+            90,
+            90
+        );
+        canvas.DrawArc(
+            x + width - cornerRadius * 2,
+            y + height - cornerRadius * 2,
+            cornerRadius * 2,
+            cornerRadius * 2,
+            color,
+            0,
+            90
+        );
 
-        canvas.DrawFilledRectangle(color, x + cornerRadius, y, width - 2 * cornerRadius, cornerRadius); 
-        canvas.DrawFilledRectangle(color, x + cornerRadius, y + height - cornerRadius, width - 2 * cornerRadius, cornerRadius);
-        canvas.DrawFilledRectangle(color, x, y + cornerRadius, cornerRadius, height - 2 * cornerRadius); 
-        canvas.DrawFilledRectangle(color, x + width - cornerRadius, y + cornerRadius, cornerRadius, height - 2 * cornerRadius); 
+        canvas.DrawFilledRectangle(
+            color,
+            x + cornerRadius,
+            y,
+            width - 2 * cornerRadius,
+            cornerRadius
+        );
+        canvas.DrawFilledRectangle(
+            color,
+            x + cornerRadius,
+            y + height - cornerRadius,
+            width - 2 * cornerRadius,
+            cornerRadius
+        );
+        canvas.DrawFilledRectangle(
+            color,
+            x,
+            y + cornerRadius,
+            cornerRadius,
+            height - 2 * cornerRadius
+        );
+        canvas.DrawFilledRectangle(
+            color,
+            x + width - cornerRadius,
+            y + cornerRadius,
+            cornerRadius,
+            height - 2 * cornerRadius
+        );
 
-        canvas.DrawFilledRectangle(color, x + cornerRadius, y + cornerRadius, width - 2 * cornerRadius, height - 2 * cornerRadius);
+        canvas.DrawFilledRectangle(
+            color,
+            x + cornerRadius,
+            y + cornerRadius,
+            width - 2 * cornerRadius,
+            height - 2 * cornerRadius
+        );
     }
 }

@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using Architect.UI.Widgets.Base;
+
+namespace Architect.UI.Widgets.Bindings;
 
 /// <summary>
 /// Represents a binding between the properties of a source and target widget, allowing for one-way or two-way data synchronization.
@@ -13,6 +16,7 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
     private readonly bool _isTwoWay;
     private readonly Action _unsubscribeSource;
     private readonly Action _unsubscribeTarget;
+    private readonly ConcurrentQueue<Action> _pendingUpdates = new();
     private int _bindingDepth;
 
     /// <summary>
@@ -40,7 +44,8 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         Func<TValue, TValue> backwardConverter,
         bool isTwoWay,
         string sourcePropertyName,
-        string targetPropertyName)
+        string targetPropertyName
+    )
     {
         _sourcePropertyName = sourcePropertyName;
         _targetPropertyName = targetPropertyName;
@@ -49,52 +54,36 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         // Source -> Target binding
         _unsubscribeSource = SubscribeToPropertyChanged(
             source,
-            () => UpdateTarget(source, target, sourceGetter, targetSetter, forwardConverter));
+            () => UpdateBinding(source, target, sourceGetter, targetSetter, forwardConverter)
+        );
 
         // Target -> Source binding (if two-way)
         if (isTwoWay)
         {
             _unsubscribeTarget = SubscribeToPropertyChanged(
                 target,
-                () => UpdateSource(source, target, sourceSetter, targetGetter, backwardConverter));
+                () => UpdateBinding(target, source, targetGetter, sourceSetter, backwardConverter)
+            );
         }
     }
 
-    private void UpdateTarget(
-        TSource source,
-        TTarget target,
-        Func<TSource, TValue> sourceGetter,
-        Action<TTarget, TValue> targetSetter,
-        Func<TValue, TValue> converter)
+    private void UpdateBinding<TSourceObj, TTargetObj>(
+        TSourceObj source,
+        TTargetObj target,
+        Func<TSourceObj, TValue> getter,
+        Action<TTargetObj, TValue> setter,
+        Func<TValue, TValue> converter
+    )
     {
         try
         {
             _bindingDepth++;
-            var value = converter(sourceGetter(source));
-            targetSetter(target, value);
+            setter(target, converter(getter(source)));
         }
         finally
         {
             _bindingDepth--;
-        }
-    }
-
-    private void UpdateSource(
-        TSource source,
-        TTarget target,
-        Action<TSource, TValue> sourceSetter,
-        Func<TTarget, TValue> targetGetter,
-        Func<TValue, TValue> converter)
-    {
-        try
-        {
-            _bindingDepth++;
-            var value = converter(targetGetter(target));
-            sourceSetter(source, value);
-        }
-        finally
-        {
-            _bindingDepth--;
+            ProcessPendingUpdates();
         }
     }
 
@@ -110,8 +99,20 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         {
             void Handler(string propertyName, object _)
             {
-                if (propertyName == _sourcePropertyName || (propertyName == _targetPropertyName && _isTwoWay))
+                if (
+                    (
+                        propertyName == _sourcePropertyName
+                        || (propertyName == _targetPropertyName && _isTwoWay)
+                    )
+                    && _bindingDepth == 0
+                )
+                {
                     callback();
+                }
+                else
+                {
+                    _pendingUpdates.Enqueue(callback);
+                }
             }
 
             Action<string, object> handler = Handler;
@@ -119,5 +120,16 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
             return () => notifier.PropertyChanged -= handler;
         }
         return () => { };
+    }
+
+    private void ProcessPendingUpdates()
+    {
+        if (_pendingUpdates.IsEmpty)
+            return;
+
+        while (_bindingDepth == 0 && _pendingUpdates.TryDequeue(out Action? update))
+        {
+            update();
+        }
     }
 }

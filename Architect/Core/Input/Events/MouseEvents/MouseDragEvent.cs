@@ -9,4 +9,4 @@ namespace Architect.Core.Input.Events;
 /// </summary>
 /// <param name="Button">The state of the mouse button involved in the drag action.</param>
 /// <param name="Position">The position of the mouse cursor during the drag action.</param>
-public record class MouseDragEvent(MouseState Button, Vector2 Position) : InputEvent(Position);
+public record class MouseDragEvent(MouseState Button, Vector2 Position) : MouseEvent(Button, Position);

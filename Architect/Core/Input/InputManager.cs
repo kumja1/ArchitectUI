@@ -53,7 +53,7 @@ sealed class InputManager
     /// <param name="widget">The widget to register the input for.</param>
     /// <param name="inputType">The type of input to register.</param>
     /// <param name="action">The event handler to invoke when the input is detected.</param>
-    public void RegisterMouseInput(IWidget widget, InputType inputType, EventHandler<InputEvent> action) => RegisterMouseInput<InputEvent>(widget, inputType, action);
+    public void RegisterMouseInput(IWidget widget, InputType inputType, EventHandler<MouseEvent> action) => RegisterMouseInput<MouseEvent>(widget, inputType, action);
 
     /// <summary>
     /// Registers a mouse input handler with a specified InputEvent type.
@@ -65,7 +65,7 @@ sealed class InputManager
     /// <exception cref="InvalidDataException">Thrown if the input type is a keyboard input type.</exception>
     public void RegisterMouseInput<T>(IWidget widget, InputType inputType, EventHandler<T> action) where T : InputEvent
     {
-        if (inputType is InputType.Keyboard or InputType.KeyboardPress or InputType.KeyboardRelease or InputType.KeyboardCombination) 
+        if (inputType is InputType.Keyboard or InputType.KeyboardPress or InputType.KeyboardRelease or InputType.KeyboardCombination)
             throw new InvalidDataException("Mouse input cannot be registered as a keyboard input.");
         RegisterInput(widget, inputType, (sender, e) => action(sender, (T)e), null);
     }
@@ -107,7 +107,11 @@ sealed class InputManager
     /// <param name="inputType">The type of input to register.</param>
     /// <param name="action">The event handler to invoke when the input is detected.</param>
     /// <param name="key">The list of keyboard keys to register (optional).</param>
-    public void RegisterInput(IWidget widget, InputType inputType, EventHandler<InputEvent> action, List<ConsoleKeyEx>? key = null) => (_inputs[inputType] ??= []).Add((widget, action, key));
+    public void RegisterInput(IWidget widget, InputType inputType, EventHandler<InputEvent> action, List<ConsoleKeyEx>? key = null)
+    {
+        _inputs[inputType] ??= [];
+        _inputs[inputType].Add((widget, action, key));
+    }
 
     /// <summary>
     /// Processes input events.
@@ -213,7 +217,7 @@ sealed class InputManager
             _ when inputType == InputType.Keyboard && isTargetKey => new KeyboardEvent(key.Key, key.Type, key.KeyChar),
             _ when inputType == InputType.KeyboardPress && isTargetKey && KeyboardEx.CheckKeyPress() => new KeyboardPressEvent(key.Key, key.Type, key.KeyChar),
             _ when inputType == InputType.KeyboardPressed && isTargetKey && key.Type == KeyEvent.KeyEventType.Make => new KeyboardPressedEvent(key.Key, key.Type, key.KeyChar),
-            _ when inputType == InputType.KeyboardRelease && isTargetKey && key.Type == KeyEvent.KeyEventType.Break  => new KeyboardReleaseEvent(key.Key, key.Type, key.KeyChar),
+            _ when inputType == InputType.KeyboardRelease && isTargetKey && key.Type == KeyEvent.KeyEventType.Break => new KeyboardReleaseEvent(key.Key, key.Type, key.KeyChar),
             _ when inputType == InputType.KeyboardCombination && keyboardKeys.All(KeyboardEx.IsKeyBeingPressed) => new KeyboardCombinationEvent(keyboardKeys),
             _ => null
         };
@@ -228,8 +232,8 @@ sealed class InputManager
     private InputEvent? GetMouseEvent(IWidget widget, InputType inputType)
     {
         var mousePosition = new Vector2((int)MouseManager.X, (int)MouseManager.Y);
-        var isInside = widget.HitTest(mousePosition);
         var wasInside = widget.HitTest(_lastMousePos);
+        var isInside = widget.HitTest(mousePosition);
 
         return mousePosition switch
         {

@@ -5,7 +5,6 @@ namespace Architect.Common.Interfaces;
 
 public interface IWidget : IDisposable
 {
-
     /// <summary>
     /// Gets a value indicating whether the widget is visible.
     /// </summary>
@@ -18,7 +17,10 @@ public interface IWidget : IDisposable
 
     IWidget? Content { get; set; }
 
-    Action<string, object> PropertyChanged { get; set; }
+    /// <summary>
+    /// Occurs when a property value changes.
+    /// </summary>
+    event Action<string, object> PropertyChanged;
 
 
     /// <summary>

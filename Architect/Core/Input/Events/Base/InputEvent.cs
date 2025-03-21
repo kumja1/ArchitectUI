@@ -1,4 +1,6 @@
 using Architect.Common.Models;
+using Architect.Common.Interfaces.Events;
+
 
 namespace Architect.Core.Input.Events;
 
@@ -7,4 +9,7 @@ namespace Architect.Core.Input.Events;
 /// </summary>
 /// <param name="Position">The position of the input event.</param>
 /// <param name="Handled">Indicates whether the input event has been handled. Default is false.</param>
-public record class InputEvent(Vector2 Position, bool Handled = false);
+public record class InputEvent(Vector2 Position, bool Handled = false) : IInputEvent
+{
+    public bool Handled { get; set; } = Handled;
+}
