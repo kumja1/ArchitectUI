@@ -1,5 +1,3 @@
-using Architect.Core.Input.Events;
-
 namespace Architect.Common.Interfaces;
 
 public interface IFocusableWidget : IWidget

@@ -77,7 +77,9 @@ public class Widget : IDisposable, IWidget
 
     public virtual void OnAttachToWidget(IWidget parent) => Parent = parent;
 
-    public virtual void OnDetachFromWidget() { }
+    public virtual void OnDetachFromWidget() => Parent = null;
+
+    public virtual Size Measure(Size availableSize) => Size;
 
     protected virtual void OnPropertyChanged(string name, object currentValue, object value)
     {
@@ -120,8 +122,6 @@ public class Widget : IDisposable, IWidget
 
         Position = new Vector2(x, y);
     }
-
-    public virtual Size Measure(Size availableSize) => Size;
 
     public void BeginDraw(Canvas canvas)
     {

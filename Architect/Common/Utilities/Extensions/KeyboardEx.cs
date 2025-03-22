@@ -3,7 +3,7 @@ using Cosmos.System;
 public static class KeyboardEx
 {
 
-    private static required KeyEvent _lastKeyEvent;
+    private static KeyEvent _lastKeyEvent;
 
 
     /// <summary>
