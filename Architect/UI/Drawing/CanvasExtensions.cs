@@ -43,22 +43,8 @@ public static class CanvasExtensions
         Size size
     ) => canvas.DrawString(text, font, color, position.X, position.Y, size);
 
-    public static void ClearArea(
-        this Canvas canvas,
-        Size size,
-        Vector2 position,
-        Color? color = null
-    )
-    {
-        color ??= Color.Black;
-        for (var y = 0; y < size.Height; y++)
-        {
-            for (var x = 0; x < size.Width; x++)
-            {
-                canvas.DrawPoint((Color)color, position.X + x, position.Y + y);
-            }
-        }
-    }
+    public static void DrawRectangle(this Canvas canvas, Color color, int x, int y, Size size) =>
+        canvas.DrawRectangle(color, x, y, size.Width, size.Height);
 
     public static void DrawRoundedRectangle(
         this Canvas canvas,
@@ -138,4 +124,13 @@ public static class CanvasExtensions
             height - 2 * cornerRadius
         );
     }
+
+    public static void DrawRoundedRectangle(
+        this Canvas canvas,
+        Color color,
+        int x,
+        int y,
+        Size size,
+        int cornerRadius
+    ) => canvas.DrawRoundedRectangle(color, x, y, size.Width, size.Height, cornerRadius);
 }

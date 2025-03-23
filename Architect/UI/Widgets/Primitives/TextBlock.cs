@@ -18,7 +18,7 @@ class TextBlock : Widget
 
     private readonly List<Line> _lines = [];
 
-    private int _currentLineY = 0;
+    private int _currentLineIndex = 0;
 
     public string Text
     {
@@ -62,6 +62,8 @@ class TextBlock : Widget
 
         foreach (var line in _lines)
             canvas.DrawString(line.Text, Font, TextColor, Position.X, line.Position.Y, TextSize);
+
+        base.Draw(canvas);
     }
 
     private IEnumerable<string> WrapString(string text)
@@ -99,7 +101,7 @@ class TextBlock : Widget
         if (newString.Length < oldString.Length) // Text was removed
         {
             _lines.Clear();
-            _currentLineY = 0;
+            _currentLineIndex = 0;
         }
 
         if (appendedText == string.Empty)
@@ -107,30 +109,33 @@ class TextBlock : Widget
 
         if (appendedText == "\n")
         {
-            _currentLineY++;
+            _currentLineIndex++;
             return;
         }
 
-        foreach (var line in EvaluteString(appendedText))
+        foreach (var line in EvaluateString(appendedText))
         {
             _lines.Add(
                 new Line
                 {
                     Text = line,
-                    Position = new Vector2(Position.X, Position.Y + _currentLineY * Font.Height),
+                    Position = new Vector2(
+                        Position.X,
+                        Position.Y + _currentLineIndex * Font.Height
+                    ),
                 }
             );
 
-            _currentLineY++;
+            _currentLineIndex++;
         }
 
-        int newWidth = _lines.Max(l => l.Position.X) + Font.Width;
-        int newHeight = _lines.Count * Font.Height;
-        if (newWidth > Size.Width || newHeight > Size.Height)
-            Size = new Size(newWidth, newHeight);
+        // int newWidth = _lines.Max(l => l.Position.X) + Font.Width;
+        // int newHeight = _lines.Count * Font.Height;
+        // if (newWidth > Size.Width || newHeight > Size.Height)
+        //    Size = new Size(newWidth, newHeight);
     }
 
-    private IEnumerable<string> EvaluteString(string text)
+    private IEnumerable<string> EvaluateString(string text)
     {
         var lines = text.Split('\n');
         foreach (var line in lines)

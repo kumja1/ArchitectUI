@@ -5,7 +5,7 @@ namespace Architect.UI.Widgets.Layout;
 
 class HorizontalStack : Stack
 {
-    public override void Arrange(IWidget parent)
+    public override void Arrange()
     {
         var currentX = Position.X;
         foreach (var widget in Content)
@@ -13,9 +13,17 @@ class HorizontalStack : Stack
             widget.OnAttachToWidget(this);
             widget.Position = VerticalAlignment switch
             {
-                VerticalAlignment.Center => widget.Position with { Y = Position.Y + AlignmentHelper.Center(Size, widget.Size).Y, X = currentX },
-                VerticalAlignment.Bottom => widget.Position with { Y = Position.Y + AlignmentHelper.Bottom(Size, widget.Size).Y, X = currentX },
-                _ => widget.Position with { X = currentX }
+                VerticalAlignment.Center => widget.Position with
+                {
+                    Y = Position.Y + AlignmentHelper.Center(Size, widget.Size).Y,
+                    X = currentX,
+                },
+                VerticalAlignment.Bottom => widget.Position with
+                {
+                    Y = Position.Y + AlignmentHelper.Bottom(Size, widget.Size).Y,
+                    X = currentX,
+                },
+                _ => widget.Position with { X = currentX },
             };
             currentX += widget.Size.Width + Spacing;
         }

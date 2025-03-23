@@ -8,19 +8,19 @@ public class MultiContentWidget : Widget
     /// <summary>
     /// Gets or sets the collection of content widgets.
     /// </summary>
-    public new List<IWidget> Content
+    public new List<IWidget>? Content
     {
-        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: []);
+        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: null);
         set => SetProperty(nameof(Content), value);
     }
 
-    public void Add(Widget widget)
+    public void AddChild(Widget widget)
     {
         Content?.Add(widget);
         widget.OnAttachToWidget(this);
     }
 
-    public void Remove(IWidget widget)
+    public void RemoveChild(IWidget widget)
     {
         Content?.Remove(widget);
         widget.Dispose();
@@ -28,7 +28,7 @@ public class MultiContentWidget : Widget
 
     public override void Draw(Canvas canvas)
     {
-        ArgumentNullException.ThrowIfNull(Content, nameof(Content));
+        DrawBackground(canvas);
         foreach (var widget in Content)
         {
             widget.Draw(canvas);
@@ -38,12 +38,12 @@ public class MultiContentWidget : Widget
     public override void Dispose()
     {
         ArgumentNullException.ThrowIfNull(Content, nameof(Content));
-        foreach (var widget in Content)
+        Content.RemoveAll(x =>
         {
-            widget.Dispose();
-        }
+            x.Dispose();
+            return true;
+        });
 
-        Content.Clear();
         GC.SuppressFinalize(this);
     }
 }

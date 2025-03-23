@@ -245,7 +245,7 @@ sealed class InputManager
             _ when inputType == InputType.MouseEnter && !wasInside && isInside => new MouseEnterEvent(mousePosition),
             _ when inputType == InputType.MouseHover && isInside => new MouseHoverEvent(mousePosition),
             _ when inputType == InputType.MouseDrag && MouseEx.MouseDrag && isInside => new MouseDragEvent(MouseManager.MouseState, mousePosition),
-            _ => null
+            _ => null,
         };
     }
 

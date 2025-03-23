@@ -91,9 +91,9 @@ public class PropertyBinder<TSource, TValue>
     /// </summary>
     /// <typeparam name="TTarget">The type of the target widget.</typeparam>
     /// <param name="target">The target widget.</param>
-    /// <param name="targetPropertyName">The property name on the target widget to bind to.</param>
+    /// <param name="targetPropertyName">The property name on the target widget to bind to. If not provided, sourcePropertyName is used instead </param>
     /// <returns>An <see cref="IDisposable"/> representing the binding subscription.</returns>
-    public IDisposable To<TTarget>(TTarget target, string targetPropertyName)
+    public IDisposable To<TTarget>(TTarget target, string targetPropertyName = null)
         where TTarget : Widget
     {
         if (_backwardConverter == null && _isTwoWay)
@@ -110,7 +110,7 @@ public class PropertyBinder<TSource, TValue>
             backwardConverter: _backwardConverter!,
             isTwoWay: _isTwoWay,
             sourcePropertyName: _sourcePropertyName,
-            targetPropertyName: targetPropertyName
+            targetPropertyName: targetPropertyName ?? _sourcePropertyName
         );
 
         _sourceBindings.Add(binding);

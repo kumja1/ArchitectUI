@@ -1,46 +1,34 @@
 using System.Drawing;
-using Architect.Common.Interfaces;
-using Architect.Core.Input;
-using Architect.Core.Input.Events;
-using Architect.UI.Widgets.Base;
+using Architect.UI.Widgets.Bindings;
 
 namespace Architect.UI.Widgets.Primitives;
 
-public class TextButton : Widget
+public class TextButton : Button
 {
     public string Text
     {
-        get => GetProperty<string>(nameof(Text));
+        get => GetProperty(nameof(Text), defaultValue: "Click Me!")!;
         set => SetProperty(nameof(Text), value);
     }
 
     public Color TextColor
     {
-        get => GetProperty<Color>(nameof(TextColor));
+        get => GetProperty(nameof(TextColor), defaultValue: Color.Black);
         set => SetProperty(nameof(TextColor), value);
     }
 
-    public EventHandler<MouseClickEvent> Clicked;
-
     public TextButton()
     {
-        Text = "Click Me!";
-        TextColor = Color.Black;
-        Content = new Button
-        {
-            Content = new TextBlock
-            {
-                TextColor = TextColor,
-                Text = Text,
-            }
-        };
+        Content = new TextBlock { TextColor = TextColor, Text = Text }.GetReference(
+            out TextBlock textBlock
+        );
+
+        Bind<TextBlock, string>(nameof(Text))
+            .WithBindingDirection(BindingDirection.TwoWay)
+            .To(textBlock);
+
+        Bind<TextBlock, Color>(nameof(TextColor))
+            .WithBindingDirection(BindingDirection.TwoWay)
+            .To(textBlock);
     }
-
-    public override void OnAttachToWidget(IWidget parent)
-    {
-        base.OnAttachToWidget(parent);
-        InputManager.Instance.RegisterMouseInput(this, InputType.MouseClick, Clicked);
-    }
-
-
 }

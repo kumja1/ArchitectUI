@@ -1,52 +1,47 @@
 using System.Drawing;
 using Architect.Common.Utilities;
-using Size = Architect.Common.Models.Size;
-using Cosmos.System.Graphics;
 using Architect.UI.Drawing;
 using Architect.UI.Widgets.Base;
+using Cosmos.System.Graphics;
+using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Primitives;
 
 class Border : Widget
 {
-
     public Color OutlineColor
     {
-        get => GetProperty<Color>(nameof(OutlineColor));
+        get =>
+            GetProperty(
+                nameof(OutlineColor),
+                defaultValue: ColorHelper.GetMonoChromaticColor(BackgroundColor)
+            );
         set => SetProperty(nameof(OutlineColor), value);
     }
 
     public Size OutlineThickness
     {
-        get => GetProperty<Size>(nameof(OutlineThickness));
+        get => GetProperty<Size>(nameof(OutlineThickness), defaultValue: Size.Zero);
         set => SetProperty(nameof(OutlineThickness), value);
     }
 
     public int OutlineRadius
     {
-        get => GetProperty<int>(nameof(OutlineRadius));
+        get => GetProperty(nameof(OutlineRadius), defaultValue: 0);
         set => SetProperty(nameof(OutlineRadius), value);
     }
 
-    public Border()
-    {
-        OutlineColor = ColorHelper.GetMonoChromaticColor(BackgroundColor);
-        OutlineThickness = Size.Zero;
-        OutlineRadius = 0;
-        Size += OutlineThickness;
-    }
-
-
     public override void Draw(Canvas canvas)
     {
-        if (OutlineRadius == 0)
-        {
-            canvas.DrawRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height);
-            return;
-        }
-        else
-            canvas.DrawRoundedRectangle(OutlineColor, Position.X, Position.Y, Size.Width, Size.Height, OutlineRadius);
+        if (OutlineRadius > 0)
+            canvas.DrawRoundedRectangle(
+                OutlineColor,
+                Position.X,
+                Position.Y,
+                Size + OutlineThickness,
+                OutlineRadius
+            );
 
-        Content?.Draw(canvas);
+        base.Draw(canvas);
     }
 }

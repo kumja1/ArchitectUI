@@ -12,6 +12,7 @@ public class FocusableWidget : Widget, IFocusableWidget
         get => GetProperty<bool>(nameof(IsFocused));
         set => SetProperty(nameof(IsFocused), value);
     }
+
     bool IFocusableWidget.IsFocused
     {
         get => IsFocused;

@@ -6,22 +6,19 @@ using Architect.UI.Widgets.Base;
 
 namespace Architect.UI.Widgets.Primitives;
 
-class Button : Widget
+public class Button : Widget
 {
     public event EventHandler<InputEvent> Clicked;
 
-
     public override void OnAttachToWidget(IWidget parent)
     {
+        InputManager.Instance.RegisterMouseInput(this, InputType.MouseClick, Clicked);
         base.OnAttachToWidget(parent);
-        if (Clicked != null)
-            InputManager.Instance.RegisterMouseInput(this, InputType.MouseClick, Clicked);
     }
 
     public override void OnDetachFromWidget()
     {
+        InputManager.Instance.RemoveInput(this, InputType.MouseClick);
         base.OnDetachFromWidget();
-        if (Clicked != null)
-            InputManager.Instance.RemoveInput(this, InputType.MouseClick);
     }
 }

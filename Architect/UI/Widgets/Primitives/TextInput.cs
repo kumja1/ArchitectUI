@@ -18,7 +18,7 @@ class TextInput : FocusableWidget
         set => SetProperty(nameof(UnfocusOnEnter), value);
     }
 
-    public EventHandler<InputEvent> TextChanged;
+    public event EventHandler<TextChangedEvent> TextChanged;
 
     public TextBlock InnerTextBlock
     {
@@ -109,20 +109,20 @@ class TextInput : FocusableWidget
             BackgroundColor = BackgroundColor,
             OutlineColor = BorderColor,
             Content = InnerTextBlock,
-        };
+        }.GetReference(out Border border);
 
         Bind<TextInput, int>(nameof(BorderThickness))
             .WithBindingDirection(BindingDirection.TwoWay)
             .WithConverter(converter: b => new Size(b, b), backwardConverter: s => s.Width)
-            .To((Border)Content, nameof(Border.OutlineThickness));
+            .To(border, nameof(Border.OutlineThickness));
 
         Bind<TextInput, Color>(nameof(BorderColor))
             .WithBindingDirection(BindingDirection.TwoWay)
-            .To((Border)Content, nameof(Border.OutlineColor));
+            .To(border, nameof(Border.OutlineColor));
 
         Bind<TextInput, Color>(nameof(BackgroundColor))
             .WithBindingDirection(BindingDirection.TwoWay)
-            .To((Border)Content, nameof(BackgroundColor));
+            .To(border);
     }
 
     public override void OnAttachToWidget(IWidget parent)
@@ -161,8 +161,12 @@ class TextInput : FocusableWidget
         BorderThickness *= BorderFocusMultiplier;
     }
 
-    private void OnTextInput(object? sender, KeyboardPressedEvent e) =>
+    private void OnTextInput(object? sender, KeyboardPressedEvent e)
+    {
+        var oldText = InnerTextBlock.Text;
         InnerTextBlock.Text += e.KeyChar.ToString();
+        TextChanged?.Invoke(this, new TextChangedEvent(InnerTextBlock.Text, oldText));
+    }
 
     private void OnControlKey(object? sender, KeyboardPressedEvent e)
     {

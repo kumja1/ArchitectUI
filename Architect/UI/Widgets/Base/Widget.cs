@@ -133,9 +133,12 @@ public class Widget : IDisposable, IWidget
 
     public virtual void Draw(Canvas canvas)
     {
-        canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
+        DrawBackground(canvas);
         Content!.Draw(canvas);
     }
+
+    private protected void DrawBackground(Canvas canvas) =>
+        canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
 
     public void SetProperty<T>(string name, T value)
     {
@@ -214,7 +217,14 @@ public class Widget : IDisposable, IWidget
     )
         where TSource : Widget => new((TSource)this, name, _bindings, null, setter);
 
-    public T GetRef<T>(ref T target)
+
+    /// <summary>
+    /// Gets a reference to the current widget.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <returns>A reference to the current widget</returns>
+    public T GetReference<T>(out T target)
         where T : Widget => target = (T)this;
 
     protected bool IsAncestor(IWidget widget) => GetAncestor(widget.GetType()) != null;
@@ -236,7 +246,6 @@ public class Widget : IDisposable, IWidget
         }
         return null;
     }
-
 
     public bool HitTest(Vector2 position) =>
         position.X >= Position.X

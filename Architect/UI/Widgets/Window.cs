@@ -1,8 +1,11 @@
-using Size = Architect.Common.Models.Size;
-using Cosmos.System.Graphics;
+using System.Drawing;
+using Architect.Common.Utilities;
 using Architect.UI.Widgets.Base;
+using Architect.UI.Widgets.Bindings;
 using Architect.UI.Widgets.Layout;
 using Architect.UI.Widgets.Primitives;
+using Cosmos.System.Graphics;
+using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets;
 
@@ -22,60 +25,83 @@ public class Window : Widget
 
     public Size CurrentSize
     {
-        get => GetProperty<Size>(nameof(CurrentSize));
+        get => GetProperty(nameof(CurrentSize), defaultValue: Size.Zero);
         private set => SetProperty(nameof(CurrentSize), value);
     }
 
-    private DockPanel ContentCore
+    public bool IsMaximized
     {
-        get => GetProperty<DockPanel>(nameof(ContentCore));
-        set => SetProperty(nameof(ContentCore), value);
+        get => GetProperty<bool>(nameof(IsMaximized));
+        private set => SetProperty(nameof(IsMaximized), value);
     }
+
+    public Color TopBarColor
+    {
+        get =>
+            GetProperty(
+                nameof(TopBarColor),
+                defaultValue: ColorHelper.GetMonoChromaticColor(BackgroundColor, 0.8f)
+            );
+        set => SetProperty(nameof(TopBarColor), value);
+    }
+
+    private readonly DockPanel InternalContent;
 
     protected Window()
     {
         MinSize = new Size(100, 100);
         MaxSize = new Size(800, 600);
 
-        TextButton? closeButton = new()
+        InternalContent = new DockPanel
         {
-            Text = "Close",
-            Size = new Size(100, 30),
-        };
-
-        TextButton maximizeButton = new()
-        {
-            Text = "Maximize",
-        };
-
-        closeButton.Clicked += (_, _) => OnWindowClose();
-        maximizeButton.Clicked += (_, _) => OnWindowMaximize();
-
-        ContentCore = new DockPanel
-        {
-            Content = [
-                new DockPanel.Item {
+            Content =
+            [
+                new DockPanel.Item
+                {
                     VerticalAlignment = VerticalAlignment.Top,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Size = new Size(0, 30),
-                    Content = new Stack {
-                        Content = [
-                            maximizeButton,
-                            closeButton
-                        ]
-                    }
-                },
+                    BackgroundColor = TopBarColor,
 
-                new DockPanel.Item {
+                    Content = new Stack
+                    {
+                        Content =
+                        [
+                            new TextButton
+                            {
+                                Text = "Maximize",
+                                Size = new Size(100, 30),
+                            }.GetReference(out TextButton maximizeButton),
+                            new TextButton
+                            {
+                                Text = "Close",
+                                Size = new Size(100, 30),
+                            }.GetReference(out TextButton closeButton),
+                        ],
+                    },
+                }.GetReference(out DockPanel.Item topBar),
+                new DockPanel.Item
+                {
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    Content = Content
-                }
-            ]
+                    Content = Content,
+                },
+            ],
         };
+
+        maximizeButton.Clicked += (_, _) => OnWindowMaximize();
+        closeButton.Clicked += (_, _) => OnWindowClose();
+
+        Bind<DockPanel.Item, Color>(nameof(TopBarColor))
+            .WithBindingDirection(BindingDirection.TwoWay)
+            .To(topBar, nameof(BackgroundColor));
     }
 
-    public override void Draw(Canvas canvas) => ContentCore.Draw(canvas);
+    public override void Draw(Canvas canvas)
+    {
+        DrawBackground(canvas);
+        InternalContent.Draw(canvas);
+    }
 
     public virtual void OnWindowClose() => Dispose();
 
@@ -89,6 +115,7 @@ public class Window : Widget
     public override void Dispose()
     {
         base.Dispose();
-        ContentCore.Dispose();
+        InternalContent.Dispose();
     }
 }
+
