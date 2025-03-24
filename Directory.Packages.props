@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Cosmos.System2" Version="0.1.0-localbuild" NoWarn="NU1604" />
+    <PackageVersion Include="Cosmos.Plugs" Version="0.1.0-localbuild" NoWarn="NU1604" />
+    <PackageVersion Include="Polyfill" Version="7.20.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Cosmos.System2" NoWarn="NU1604" />
+    <PackageReference Include="Cosmos.Plugs" NoWarn="NU1604" />
+    <PackageReference Include="Polyfill">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Architect.Common/Architect.Common.csproj" />
+    <ProjectReference Include="../Architect.Core/Architect.Core.csproj" />
+  </ItemGroup>
+
+</Project>

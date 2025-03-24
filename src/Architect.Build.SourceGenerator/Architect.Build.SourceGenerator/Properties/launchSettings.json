@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Architect.Build.SourceGenerator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Architect.Build.SourceGenerator.Example\\Architect.Build.SourceGenerator.Example.csproj"
+    }
+  }
+}
