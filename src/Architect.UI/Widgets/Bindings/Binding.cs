@@ -16,6 +16,7 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
 {
     private readonly string _sourcePropertyName;
     private readonly string _targetPropertyName;
+    private readonly BindingDirection _direction;
     private readonly bool _isTwoWay;
     private readonly Action _unsubscribeSource;
     private readonly Action _unsubscribeTarget;
@@ -45,23 +46,28 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         Action<TTarget, TValue> targetSetter,
         Func<TValue, TValue> forwardConverter,
         Func<TValue, TValue> backwardConverter,
-        bool isTwoWay,
+        BindingDirection direction,
         string sourcePropertyName,
         string targetPropertyName
     )
     {
         _sourcePropertyName = sourcePropertyName;
         _targetPropertyName = targetPropertyName;
-        _isTwoWay = isTwoWay;
+        _direction = direction;
+
+        _isTwoWay = direction == BindingDirection.TwoWay;
 
         // Source -> Target binding
-        _unsubscribeSource = SubscribeToPropertyChanged(
-            source,
-            () => UpdateBinding(source, target, sourceGetter, targetSetter, forwardConverter)
-        );
+        if (_direction == BindingDirection.OneWayToTarget || _isTwoWay)
+            _unsubscribeSource = SubscribeToPropertyChanged(
+                source,
+                () => UpdateBinding(source, target, sourceGetter, targetSetter, forwardConverter)
+            );
+        else if (_direction == BindingDirection.OneTime)
+            UpdateBinding(source, target, sourceGetter, targetSetter, forwardConverter);
 
-        // Target -> Source binding (if two-way)
-        if (isTwoWay)
+        // Target -> Source binding (if two-way or one-way to source)
+        if (_isTwoWay || _direction == BindingDirection.OneWayToSource)
         {
             _unsubscribeTarget = SubscribeToPropertyChanged(
                 target,
@@ -86,7 +92,8 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         finally
         {
             _bindingDepth--;
-            ProcessPendingUpdates();
+            if (_bindingDepth == 0)
+                ProcessPendingUpdates();
         }
     }
 
@@ -98,7 +105,7 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
 
     private Action SubscribeToPropertyChanged<T>(T obj, Action callback)
     {
-        if (obj is Widget notifier)
+        if (obj is IBindable bindable)
         {
             void Handler(string propertyName, object _)
             {
@@ -107,20 +114,18 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
                         propertyName == _sourcePropertyName
                         || (propertyName == _targetPropertyName && _isTwoWay)
                     )
-                    && _bindingDepth == 0
                 )
                 {
-                    callback();
-                }
-                else
-                {
-                    _pendingUpdates.Enqueue(callback);
+                    if (_bindingDepth == 0)
+                        callback();
+                    else
+                        _pendingUpdates.Enqueue(callback);
                 }
             }
 
             Action<string, object> handler = Handler;
-            notifier.PropertyChanged += handler;
-            return () => notifier.PropertyChanged -= handler;
+            bindable.PropertyChanged += handler;
+            return () => bindable.PropertyChanged -= handler;
         }
         return () => { };
     }
@@ -131,8 +136,6 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
             return;
 
         while (_bindingDepth == 0 && _pendingUpdates.TryDequeue(out Action? update))
-        {
             update();
-        }
     }
 }

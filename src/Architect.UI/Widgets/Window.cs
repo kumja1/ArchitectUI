@@ -118,4 +118,3 @@ public class Window : Widget
         InternalContent.Dispose();
     }
 }
-

@@ -21,7 +21,7 @@ public class PropertyBinder<TSource, TValue>
 
     private readonly Func<TValue, TValue> _forwardConverter;
 
-    private bool _isTwoWay;
+    private BindingDirection _direction;
 
     private readonly string _sourcePropertyName;
 
@@ -81,9 +81,9 @@ public class PropertyBinder<TSource, TValue>
     /// </summary>
     /// <param name="mode">The binding direction mode.</param>
     /// <returns>This instance for method chaining.</returns>
-    public PropertyBinder<TSource, TValue> WithBindingDirection(BindingDirection mode)
+    public PropertyBinder<TSource, TValue> WithBindingDirection(BindingDirection direction)
     {
-        _isTwoWay = mode == BindingDirection.TwoWay;
+        _direction = direction;
         return this;
     }
 
@@ -97,7 +97,7 @@ public class PropertyBinder<TSource, TValue>
     public IDisposable To<TTarget>(TTarget target, string targetPropertyName = null)
         where TTarget : IBindable
     {
-        if (_backwardConverter == null && _isTwoWay)
+        if (_backwardConverter == null && _direction == BindingDirection.TwoWay)
             throw new InvalidOperationException("Two-way binding requires a reverse converter");
 
         var binding = new Binding<TSource, TTarget, TValue>(
@@ -109,7 +109,7 @@ public class PropertyBinder<TSource, TValue>
             targetSetter: (s, v) => s.SetProperty(targetPropertyName, v),
             forwardConverter: _forwardConverter,
             backwardConverter: _backwardConverter!,
-            isTwoWay: _isTwoWay,
+            direction: _direction,
             sourcePropertyName: _sourcePropertyName,
             targetPropertyName: targetPropertyName ?? _sourcePropertyName
         );
