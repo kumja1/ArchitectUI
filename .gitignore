@@ -6,6 +6,3 @@ obj/
 Cosmos/
 IL2CPU/
 XSharp/
-
-# Ignore solution files
-*.sln
