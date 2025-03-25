@@ -1,29 +1,29 @@
-using System.Collections.Immutable;
 using System.Text;
+using Architect.Build.SourceGenerator.Models;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Architect.Build.SourceGenerator;
 
-[Generator(LanguageNames.CSharp)]
+[Generator]
 internal sealed partial class BindableGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(PostInitializationCallback);
 
-        IncrementalValueProvider<ImmutableArray<MethodDeclarationSyntax>> syntaxProvider = context
-            .SyntaxProvider.CreateSyntaxProvider(SyntaxProviderPredicate, SyntaxProviderTransform)
-            .Where(static method => method is not null)
-            .Collect()!;
+        var supportsPartial = context.AnalyzerConfigOptionsProvider.Select(SupportsPartial);
 
-        IncrementalValueProvider<(
-            ImmutableArray<MethodDeclarationSyntax> Left,
-            Compilation Right
-        )> source = syntaxProvider.Combine(context.CompilationProvider);
+        IncrementalValuesProvider<(ClassInfo, bool)> outputProvider = context
+            .SyntaxProvider.ForAttributeWithMetadataName(
+                "Roslyn.Generated.BindableObjectAttribute",
+                SyntaxProviderPredicate,
+                SyntaxProviderTransform
+            )
+            .Combine(supportsPartial);
 
-        context.RegisterSourceOutput(source, SourceOutputAction);
+        context.RegisterSourceOutput(outputProvider, SourceOutputAction);
     }
 
     private static void PostInitializationCallback(
@@ -43,23 +43,36 @@ internal sealed partial class BindableGenerator : IIncrementalGenerator
 
     private static void SourceOutputAction(
         SourceProductionContext context,
-        (ImmutableArray<MethodDeclarationSyntax> Left, Compilation Right) candidates
+        (ClassInfo Left, bool Right) candidate
     )
     {
-        if (candidates.Left.IsEmpty)
-        {
+        if (candidate.Left == ClassInfo.Empty)
             return;
-        }
 
-        foreach (
-            (string typeName, string source) in GenerateSourceCode(
-                candidates.Left,
-                candidates.Right,
-                context.CancellationToken
+        var source = GenerateSourceCode(candidate.Left, candidate.Right, context.CancellationToken);
+
+        context.AddSource($"{candidate.Left.Name}.g.cs", source);
+    }
+
+    private static bool SupportsPartial(
+        AnalyzerConfigOptionsProvider analyzerConfig,
+        CancellationToken token
+    )
+    {
+        token.ThrowIfCancellationRequested();
+
+        if (
+            !analyzerConfig.GlobalOptions.TryGetValue(
+                "build_property.TargetFramework",
+                out var targetFramework
             )
         )
-        {
-            context.AddSource($"{typeName}.HelloWorld.g.cs", source);
-        }
+            return false;
+
+        string versionString = targetFramework.Replace("net", "").Replace("coreapp", "");
+
+        if (Version.TryParse(versionString, out var version))
+            return version.Major >= 9;
+        return true;
     }
 }

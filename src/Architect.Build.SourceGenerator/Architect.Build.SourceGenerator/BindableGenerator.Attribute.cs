@@ -17,7 +17,7 @@ namespace Roslyn.Generated;
 
 	[{generatedCodeAttribute}]
 	[global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false)]
-	internal sealed class BindableAttribute : global::System.Attribute;
+	internal sealed class BindableObjectAttribute : global::System.Attribute;
 ";
 
     private static readonly string bindablePropertyAttribute =
@@ -27,8 +27,7 @@ namespace Roslyn.Generated;
 namespace Roslyn.Generated;
 
 	[{generatedCodeAttribute}]
-	[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false)]
+	[global::System.AttributeUsage(global::System.AttributeTargets.Property | global::System.AttributeTargets.Field  , AllowMultiple = false)]
 	internal sealed class BindablePropertyAttribute : global::System.Attribute;
 ";
-
 }

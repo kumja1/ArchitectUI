@@ -81,7 +81,7 @@ public class Widget : IDisposable, IWidget
 
     public virtual Size Measure(Size availableSize) => Size;
 
-    public virtual void OnPropertyChanged(string name, object currentValue, object value)
+    private protected virtual void OnPropertyChanged(string name, object currentValue, object value)
     {
         if (name == nameof(Content) && value is IWidget newWidget)
         {
@@ -216,7 +216,6 @@ public class Widget : IDisposable, IWidget
         Action<TSource, TValue>? setter = null
     )
         where TSource : Widget => new((TSource)this, name, _bindings, null, setter);
-
 
     /// <summary>
     /// Gets a reference to the current widget.

@@ -85,7 +85,11 @@ class TextBlock : Widget
             yield return currentLine;
     }
 
-    public override void OnPropertyChanged(string name, object currentValue, object value)
+    private protected override void OnPropertyChanged(
+        string name,
+        object currentValue,
+        object value
+    )
     {
         base.OnPropertyChanged(name, currentValue, value);
 

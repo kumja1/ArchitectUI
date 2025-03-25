@@ -18,11 +18,6 @@ public interface IWidget : IDisposable, IBindable
     IWidget? Content { get; set; }
 
     /// <summary>
-    /// Occurs when a property value changes.
-    /// </summary>
-    event Action<string, object> PropertyChanged;
-
-    /// <summary>
     /// Gets or sets the position of the widget.
     /// </summary>
     Vector2 Position { get; set; }
