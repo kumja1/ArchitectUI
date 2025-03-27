@@ -5,8 +5,6 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4EA50B77-A176-4A92-B2AE-FC6BA0B71DBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architect.Build.SourceGenerator.Analyzer.Test", "tests\Architect.Build.SourceGenerator.Analyzer.Test\Architect.Build.SourceGenerator.Analyzer.Test.csproj", "{A89025CF-BE6D-402D-BCAF-912DE10CC61B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architect.Build.SourceGenerator.UnitTests", "tests\Architect.Build.SourceGenerator.UnitTests\Architect.Build.SourceGenerator.UnitTests.csproj", "{1A650486-5B0B-49B8-91D5-DF6ADFF6CD83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{23E72EC5-C074-4DA5-9D2A-6C2E51A75331}"
@@ -35,16 +33,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architect.Build.SourceGener
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architect.Build.SourceGenerator.Example", "src\Architect.Build\Architect.Build.SourceGenerator.Example\Architect.Build.SourceGenerator.Example.csproj", "{A2190A3F-1B69-4BF4-9AF6-44C23E3593BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architect.Build.SourceGenerator.Analyzer.Test", "tests\Architect.Build.SourceGenerator.Analyzer.Test\Architect.Build.SourceGenerator.Analyzer.Test.csproj", "{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A89025CF-BE6D-402D-BCAF-912DE10CC61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A89025CF-BE6D-402D-BCAF-912DE10CC61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A89025CF-BE6D-402D-BCAF-912DE10CC61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A89025CF-BE6D-402D-BCAF-912DE10CC61B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A650486-5B0B-49B8-91D5-DF6ADFF6CD83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A650486-5B0B-49B8-91D5-DF6ADFF6CD83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A650486-5B0B-49B8-91D5-DF6ADFF6CD83}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -85,12 +81,15 @@ Global
 		{A2190A3F-1B69-4BF4-9AF6-44C23E3593BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2190A3F-1B69-4BF4-9AF6-44C23E3593BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2190A3F-1B69-4BF4-9AF6-44C23E3593BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{A89025CF-BE6D-402D-BCAF-912DE10CC61B} = {4EA50B77-A176-4A92-B2AE-FC6BA0B71DBA}
 		{1A650486-5B0B-49B8-91D5-DF6ADFF6CD83} = {4EA50B77-A176-4A92-B2AE-FC6BA0B71DBA}
 		{6D126442-25C9-453A-891F-299CF5238BC6} = {23E72EC5-C074-4DA5-9D2A-6C2E51A75331}
 		{88DC5B88-FEF0-4378-A633-FD29793BDE69} = {6D126442-25C9-453A-891F-299CF5238BC6}
@@ -104,6 +103,7 @@ Global
 		{B5A953F4-3E0F-455A-AD95-B50C17B64461} = {7B2FB477-8029-16AD-BC48-C093F259DF17}
 		{602BCD8C-FCE0-4481-B83C-E674AF34AA2C} = {7B2FB477-8029-16AD-BC48-C093F259DF17}
 		{A2190A3F-1B69-4BF4-9AF6-44C23E3593BF} = {DB713548-C1AF-5C58-D1B5-C257378013D1}
+		{95BF9A63-8CFB-4AB1-9B8B-24B7ECA94F36} = {4EA50B77-A176-4A92-B2AE-FC6BA0B71DBA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A51B7B7-19FF-4259-A292-A1AD5C234873}

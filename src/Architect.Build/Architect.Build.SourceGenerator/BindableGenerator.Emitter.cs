@@ -34,7 +34,7 @@ internal partial class BindableGenerator
 
     private static void WriteNamespaceAndUsings(IndentedTextWriter source, ClassInfo classInfo)
     {
-        source.WriteLine("using Architect.Common.Interfaces;");
+        source.WriteLine("using Architect.UI.Widgets.Binding.Interfaces;");
         source.WriteLine();
 
         if (!classInfo.Namespace.IsGlobal)
@@ -166,7 +166,9 @@ internal partial class BindableGenerator
         CancellationToken cancellationToken
     )
     {
-        source.WriteLine("public void SetProperty<T>(string propertyName, T value)");
+        source.WriteLine(
+            "public void SetProperty<T>(string propertyName, T value, IBinding? associatedBinding = null)"
+        );
         source.WriteLine("{");
 
         source.Indent++;
@@ -207,5 +209,4 @@ internal partial class BindableGenerator
         source.WriteLine("}");
         source.WriteLine();
     }
-
 }

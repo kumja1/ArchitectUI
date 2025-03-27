@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Architect.Build.SourceGenerator.Analyzer.CodeFixes;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.VisualStudio.Composition;
 
@@ -18,12 +14,24 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
             ExportProviderFactory = new Lazy<IExportProviderFactory>(
                 () =>
                 {
-                    var discovery = new AttributedPartDiscovery(Resolver.DefaultInstance, isNonPublicSupported: true);
-                    var parts = Task.Run(() => discovery.CreatePartsAsync(typeof(Architect.Build.SourceGenerator.AnalyzerCodeFixProvider).Assembly)).GetAwaiter().GetResult();
-                    var catalog = ComposableCatalog.Create(Resolver.DefaultInstance).AddParts(parts);
+                    var discovery = new AttributedPartDiscovery(
+                        Resolver.DefaultInstance,
+                        isNonPublicSupported: true
+                    );
+                    var parts = Task.Run(
+                            () =>
+                                discovery.CreatePartsAsync(typeof(BindableCodeFixProvider).Assembly)
+                        )
+                        .GetAwaiter()
+                        .GetResult();
+                    var catalog = ComposableCatalog
+                        .Create(Resolver.DefaultInstance)
+                        .AddParts(parts);
 
                     var configuration = CompositionConfiguration.Create(catalog);
-                    var runtimeComposition = RuntimeComposition.CreateRuntimeComposition(configuration);
+                    var runtimeComposition = RuntimeComposition.CreateRuntimeComposition(
+                        configuration
+                    );
                     return runtimeComposition.CreateExportProviderFactory();
                 },
                 LazyThreadSafetyMode.ExecutionAndPublication
@@ -35,17 +43,24 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
             var exportProvider = ExportProviderFactory.Value.CreateExportProvider();
             var exports = exportProvider.GetExports<CodeFixProvider, LanguageMetadata>();
 
-            return exports.Where(export => export.Metadata.Languages.Contains(language)).Select(export => export.Value);
+            return exports
+                .Where(export => export.Metadata.Languages.Contains(language))
+                .Select(export => export.Value);
         }
 
         class LanguageMetadata
         {
             public LanguageMetadata(IDictionary<string, object> data)
             {
-                if (!data.TryGetValue(nameof(ExportCodeFixProviderAttribute.Languages), out var languages))
-                    languages = new string[0];
+                if (
+                    !data.TryGetValue(
+                        nameof(ExportCodeFixProviderAttribute.Languages),
+                        out var languages
+                    )
+                )
+                    languages = Array.Empty<string>();
 
-                Languages = ((string[])languages).ToImmutableArray();
+                Languages = [.. (string[])languages];
             }
 
             public ImmutableArray<string> Languages { get; }

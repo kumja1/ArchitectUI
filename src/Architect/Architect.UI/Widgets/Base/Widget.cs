@@ -4,7 +4,8 @@ using Architect.Common.Models;
 using Architect.Common.Utilities;
 using Architect.Common.Utilities.Extensions;
 using Architect.Core.Rendering;
-using Architect.UI.Widgets.Bindings;
+using Architect.UI.Widgets.Binding.Core;
+using Architect.UI.Widgets.Binding.Interfaces;
 using Architect.UI.Widgets.Layout;
 using Cosmos.System.Graphics;
 using Size = Architect.Common.Models.Size;
@@ -13,9 +14,11 @@ namespace Architect.UI.Widgets.Base;
 
 public class Widget : IDisposable, IWidget
 {
-    private static IWidget? _previousUpdatingWidget;
+    // private static IWidget? _previousUpdatingWidget;
 
     private bool _isDirty;
+
+    private Size? _naturalSize;
 
     private readonly List<IDisposable> _bindings = [];
 
@@ -88,7 +91,13 @@ public class Widget : IDisposable, IWidget
 
     public virtual void OnDetachFromWidget() => Parent = null;
 
-    public virtual Size Measure(Size availableSize) => Size;
+    public virtual Size Measure(Size availableSize)
+    {
+        _naturalSize ??= GetNaturalSize();
+        return Size.Clamp(_naturalSize.Value, Size, availableSize);
+    }
+
+    public virtual Size GetNaturalSize() => Size + InternalContent?.GetNaturalSize() ?? Size.Zero;
 
     protected virtual void OnPropertyChanged(string name, object currentValue, object value)
     {
@@ -103,19 +112,20 @@ public class Widget : IDisposable, IWidget
             || name == nameof(VerticalAlignment)
         )
         {
-            Arrange();
+            var finalRect = new Rect(Position, Measure(Parent?.Size ?? Size.Infinite));
+            Arrange(finalRect);
         }
 
         PropertyChanged?.Invoke(name, value);
     }
 
-    public virtual void Arrange()
+    public virtual void Arrange(Rect finalRect)
     {
         var x = HorizontalAlignment switch
         {
             HorizontalAlignment.Left => 0,
-            HorizontalAlignment.Right => AlignmentHelper.Right(Parent.Size, Size).X,
-            HorizontalAlignment.Center => AlignmentHelper.Center(Parent.Size, Size).X,
+            HorizontalAlignment.Right => AlignmentHelper.Right(finalRect.Size, Size).X,
+            HorizontalAlignment.Center => AlignmentHelper.Center(finalRect.Size, Size).X,
             HorizontalAlignment.Stretch => Size.Width,
             _ => Position.X,
         };
@@ -123,12 +133,13 @@ public class Widget : IDisposable, IWidget
         var y = VerticalAlignment switch
         {
             VerticalAlignment.Top => 0,
-            VerticalAlignment.Bottom => AlignmentHelper.Bottom(Parent.Size, Size).Y,
-            VerticalAlignment.Center => AlignmentHelper.Center(Parent.Size, Size).Y,
+            VerticalAlignment.Bottom => AlignmentHelper.Bottom(finalRect.Size, Size).Y,
+            VerticalAlignment.Center => AlignmentHelper.Center(finalRect.Size, Size).Y,
             VerticalAlignment.Stretch => Size.Height,
             _ => Position.Y,
         };
 
+        Size = finalRect.Size;
         Position = new Vector2(x, y);
     }
 
@@ -152,17 +163,25 @@ public class Widget : IDisposable, IWidget
     private protected void DrawBackground(Canvas canvas) =>
         canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
 
-    public void SetProperty<T>(string name, T value)
+    public void SetProperty<T>(string name, T value, IBinding? associatedBinding = null)
     {
         var currentValue = GetProperty<T>(name);
+
         if (ShouldRedraw(currentValue, value))
         {
             _properties[name] = value;
             OnPropertyChanged(name, currentValue, value);
-            if (Parent != null && Parent == _previousUpdatingWidget) // Supress redraw if the parent is the one updating but the change is not related to the parent
-                return;
 
-            _previousUpdatingWidget = this;
+            if (associatedBinding != null)
+            {
+                var (_, _, direction) = associatedBinding;
+                if (
+                    direction == BindingDirection.OneWayToTarget
+                    || direction == BindingDirection.OneWayToSource
+                )
+                    return; // If the binding is one way, we don't need to update the property. This is because the property does not directly impact the widget itself, so we defer the update and redrawing to the target widget.
+            }
+
             MarkDirty(true);
         }
     }
@@ -226,7 +245,7 @@ public class Widget : IDisposable, IWidget
 
     public PropertyBinder<TSource, TValue> Bind<TSource, TValue>(
         string name,
-        Action<TSource, TValue>? setter = null
+        Action<TSource, TValue, IBinding?>? setter = null
     )
         where TSource : Widget =>
         new(

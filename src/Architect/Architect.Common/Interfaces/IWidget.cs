@@ -1,3 +1,4 @@
+using Architect.Common.Interfaces.Bindings;
 using Architect.Common.Models;
 using Cosmos.System.Graphics;
 
@@ -32,6 +33,8 @@ public interface IWidget : IDisposable, IBindable
     /// </summary>
     /// <param name="widget">The parent widget to which the widget is attached.</param>
     void OnAttachToWidget(IWidget widget);
+
+    Size GetNaturalSize();
 
     /// <summary>
     /// Method called when the widget is detached from its parent widget.

@@ -10,13 +10,14 @@ public struct Vector2(int X, int Y)
 
     public static Vector2 Infinite => new(int.MaxValue, int.MaxValue);
 
+    public static Vector2 operator *(Vector2 left, int right) =>
+        new(left.X * right, left.Y * right);
 
+    public static Vector2 operator +(Vector2 left, Vector2 right) =>
+        new(left.X + right.X, left.Y + right.Y);
 
-    public static Vector2 operator *(Vector2 left, int right) => new(left.X * right, left.Y * right);
-
-    public static Vector2 operator +(Vector2 left, Vector2 right) => new(left.X + right.X, left.Y + right.Y);
-
-    public static Vector2 operator -(Vector2 left, Vector2 right) => new(left.X - right.X, left.Y - right.Y);
+    public static Vector2 operator -(Vector2 left, Vector2 right) =>
+        new(left.X - right.X, left.Y - right.Y);
 
     public readonly bool Equals(Vector2 other) => X == other.X && Y == other.Y;
 
@@ -27,4 +28,7 @@ public struct Vector2(int X, int Y)
     public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
 
     public static bool operator !=(Vector2 left, Vector2 right) => !left.Equals(right);
+
+    public static Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max) =>
+        new(Math.Clamp(value.X, min.X, max.X), Math.Clamp(value.Y, min.Y, max.Y));
 }

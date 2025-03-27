@@ -7,8 +7,9 @@ namespace Architect.Build.SourceGenerator.Example;
 public partial class BindableModel : IBindable
 {
     [BindableProperty]
-    private string Monkey;
+    private string monkey { get; set; }
 }
+
 
 public class Program
 {

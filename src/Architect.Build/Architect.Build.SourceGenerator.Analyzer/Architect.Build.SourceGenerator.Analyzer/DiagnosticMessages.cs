@@ -72,5 +72,6 @@ public static class DiagnosticMessages
         MemberMustBePartial,
         MemberNameIsIdentical,
         MemberCanBeField,
+        MemberShouldBePrivate,
     ];
 }

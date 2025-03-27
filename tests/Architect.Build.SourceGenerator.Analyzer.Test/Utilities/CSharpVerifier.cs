@@ -18,7 +18,9 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
             CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>.Diagnostic();
 
         public static DiagnosticResult Diagnostic(string diagnosticId) =>
-            CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>.Diagnostic(diagnosticId);
+            CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>.Diagnostic(
+                diagnosticId
+            );
 
         public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor) =>
             new(descriptor);
@@ -28,17 +30,32 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
 
         public static Task VerifyAnalyzerAsyncV2(
             string source,
-            params DiagnosticResult[] diagnostics) =>
-            VerifyAnalyzerAsyncV2(new[] { source }, diagnostics);
+            params DiagnosticResult[] diagnostics
+        ) => VerifyAnalyzerAsyncV2([source], [], string.Empty, diagnostics);
 
         public static Task VerifyAnalyzerAsyncV2(
             string[] sources,
-            params DiagnosticResult[] diagnostics)
+            (string filename, string content)[] generatedSources,
+            params DiagnosticResult[] diagnostics
+        ) => VerifyAnalyzerAsyncV2(sources, generatedSources, string.Empty, diagnostics);
+
+        public static Task VerifyAnalyzerAsyncV2(
+            string[] sources,
+            (string filename, string content)[] generatedSources,
+            string targetFramework,
+            params DiagnosticResult[] diagnostics
+        )
         {
-            var test = new TestV2();
+            if (string.IsNullOrEmpty(targetFramework))
+                targetFramework = "netstandard2.0";
+
+            var test = new TestV2 { TargetFramework = targetFramework };
 
             foreach (var source in sources)
                 test.TestState.Sources.Add(source);
+
+            foreach (var generatedSource in generatedSources)
+                test.TestState.GeneratedSources.Add(generatedSource);
 
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
             return test.RunAsync();
@@ -46,10 +63,13 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
 
         public static Task VerifyAnalyzerAsyncV2(
             (string filename, string content)[] sources,
-            params DiagnosticResult[] diagnostics)
+            params DiagnosticResult[] diagnostics
+        )
         {
             var test = new TestV2();
-            test.TestState.Sources.AddRange(sources.Select(s => (s.filename, SourceText.From(s.content))));
+            test.TestState.Sources.AddRange(
+                sources.Select(s => (s.filename, SourceText.From(s.content)))
+            );
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
             return test.RunAsync();
         }
@@ -58,13 +78,14 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
             string before,
             string after,
             int? codeActionIndex = null,
-            params DiagnosticResult[] diagnostics)
+            params DiagnosticResult[] diagnostics
+        )
         {
             var test = new TestV2
             {
                 TestCode = before,
-                FixedCode = after,           
-                CodeActionIndex = codeActionIndex
+                FixedCode = after,
+                CodeActionIndex = codeActionIndex,
             };
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
             return test.RunAsync();
@@ -72,12 +93,25 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
 
         public class TestV2 : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>
         {
+            public string TargetFramework { get; set; } = "netstandard2.0";
+
             public TestV2()
             {
                 ReferenceAssemblies = CodeAnalyzerHelper.CurrentXunitV2;
+                MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
                 // xunit diagnostics are reported in both normal and generated code
                 TestBehaviors |= TestBehaviors.SkipGeneratedCodeCheck;
+            }
+
+            protected override ParseOptions CreateParseOptions()
+            {
+                var parseOptions = base.CreateParseOptions();
+                return parseOptions.WithFeatures(
+                    parseOptions.Features.Concat(
+                        [new KeyValuePair<string, string>("TargetFramework", TargetFramework)]
+                    )
+                );
             }
 
             protected override IEnumerable<CodeFixProvider> GetCodeFixProviders()
@@ -85,7 +119,11 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
                 var analyzer = new TAnalyzer();
 
                 foreach (var provider in CodeFixProviderDiscovery.GetCodeFixProviders(Language))
-                    if (analyzer.SupportedDiagnostics.Any(diagnostic => provider.FixableDiagnosticIds.Contains(diagnostic.Id)))
+                    if (
+                        analyzer.SupportedDiagnostics.Any(diagnostic =>
+                            provider.FixableDiagnosticIds.Contains(diagnostic.Id)
+                        )
+                    )
                         yield return provider;
             }
         }

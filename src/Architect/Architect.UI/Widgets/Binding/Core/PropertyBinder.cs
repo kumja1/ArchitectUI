@@ -1,8 +1,7 @@
-using Architect.Common.Interfaces;
 using Architect.UI.Widgets.Base;
-using Architect.UI.Widgets.Primitives;
+using Architect.UI.Widgets.Binding.Interfaces;
 
-namespace Architect.UI.Widgets.Bindings;
+namespace Architect.UI.Widgets.Binding.Core;
 
 /// <summary>
 /// Binds a property from a source widget to a target widget, optionally using converters and supporting two-way binding.
@@ -16,7 +15,7 @@ public class PropertyBinder<TSource, TValue>
 
     private readonly Func<TSource, TValue> _sourceGetter;
 
-    private readonly Action<TSource, TValue> _sourceSetter;
+    private readonly Action<TSource, TValue, IBinding?> _sourceSetter;
 
     private readonly List<IDisposable> _sourceBindings;
 
@@ -42,12 +41,12 @@ public class PropertyBinder<TSource, TValue>
         string sourcePropertyName,
         List<IDisposable> sourceBindings,
         Func<TSource, TValue>? sourceGetter = null,
-        Action<TSource, TValue>? sourceSetter = null
+        Action<TSource, TValue, IBinding>? sourceSetter = null
     )
     {
         _source = source;
         _sourceGetter = sourceGetter ?? (s => source.GetProperty<TValue>(sourcePropertyName));
-        _sourceSetter = sourceSetter ?? ((s, v) => s.SetProperty(sourcePropertyName, v));
+        _sourceSetter = sourceSetter ?? ((s, v, b) => source.SetProperty(sourcePropertyName, v, b));
         _sourcePropertyName = sourcePropertyName;
         _sourceBindings = sourceBindings;
         _forwardConverter = v => v;
@@ -73,7 +72,9 @@ public class PropertyBinder<TSource, TValue>
             _sourcePropertyName,
             _sourceBindings,
             s => converter(_sourceGetter(s)),
-            backwardConverter != null ? (s, v) => _sourceSetter(s, backwardConverter(v)) : null
+            backwardConverter != null
+                ? (s, v, b) => _sourceSetter(s, backwardConverter(v), b)
+                : null
         );
     }
 
@@ -109,7 +110,7 @@ public class PropertyBinder<TSource, TValue>
             sourceGetter: _sourceGetter,
             sourceSetter: _sourceSetter,
             targetGetter: s => s.GetProperty<TValue>(targetPropertyName),
-            targetSetter: (s, v) => s.SetProperty(targetPropertyName, v),
+            targetSetter: (s, v, b) => s.SetProperty(targetPropertyName, v, b),
             forwardConverter: _forwardConverter,
             backwardConverter: _backwardConverter!,
             direction: _direction,

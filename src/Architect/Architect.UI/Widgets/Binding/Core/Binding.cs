@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Concurrent;
-using Architect.Common.Interfaces;
 using Architect.UI.Widgets.Base;
+using Architect.UI.Widgets.Binding.Interfaces;
 
-namespace Architect.UI.Widgets.Bindings;
+namespace Architect.UI.Widgets.Binding.Core;
 
 /// <summary>
 /// Represents a binding between the properties of a source and target widget, allowing for one-way or two-way data synchronization.
@@ -11,13 +10,12 @@ namespace Architect.UI.Widgets.Bindings;
 /// <typeparam name="TSource">The type of the source widget.</typeparam>
 /// <typeparam name="TTarget">The type of the target widget.</typeparam>
 /// <typeparam name="TValue">The type of the value being bound.</typeparam>
-public sealed class Binding<TSource, TTarget, TValue> : IDisposable
+public sealed class Binding<TSource, TTarget, TValue> : IBinding
     where TSource : Widget
     where TTarget : IBindable
 {
     private readonly string _sourcePropertyName;
     private readonly string _targetPropertyName;
-    private readonly BindingDirection _direction;
     private readonly bool _isTwoWay;
     private readonly Action _unsubscribeSource;
     private readonly Action _unsubscribeTarget;
@@ -25,6 +23,8 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
     private int _bindingDepth;
 
     private bool _isUpdating; // This is used to prevent infinite loops when updating the source or target property during a binding update.
+
+    public BindingDirection _direction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Binding{TSource, TTarget, TValue}"/> class.
@@ -44,9 +44,9 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         TSource source,
         TTarget target,
         Func<TSource, TValue> sourceGetter,
-        Action<TSource, TValue> sourceSetter,
+        Action<TSource, TValue, IBinding?> sourceSetter,
         Func<TTarget, TValue> targetGetter,
-        Action<TTarget, TValue> targetSetter,
+        Action<TTarget, TValue, IBinding?> targetSetter,
         Func<TValue, TValue> forwardConverter,
         Func<TValue, TValue> backwardConverter,
         BindingDirection direction,
@@ -54,9 +54,9 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         string targetPropertyName
     )
     {
+        _direction = direction;
         _sourcePropertyName = sourcePropertyName;
         _targetPropertyName = targetPropertyName;
-        _direction = direction;
 
         _isTwoWay = direction == BindingDirection.TwoWay;
 
@@ -81,7 +81,7 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         TSourceObj source,
         TTargetObj target,
         Func<TSourceObj, TValue> getter,
-        Action<TTargetObj, TValue> setter,
+        Action<TTargetObj, TValue, IBinding?> setter,
         Func<TValue, TValue> converter
     )
     {
@@ -89,7 +89,7 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
         {
             _isUpdating = true;
             _bindingDepth++;
-            setter(target, converter(getter(source)));
+            setter(target, converter(getter(source)), this);
         }
         finally
         {
@@ -141,5 +141,16 @@ public sealed class Binding<TSource, TTarget, TValue> : IDisposable
 
         while (_bindingDepth == 0 && _pendingUpdates.TryDequeue(out Action? update))
             update();
+    }
+
+    public void Deconstruct(
+        out string sourcePropertyName,
+        out string targetPropertyName,
+        out BindingDirection direction
+    )
+    {
+        sourcePropertyName = _sourcePropertyName;
+        targetPropertyName = _targetPropertyName;
+        direction = _direction;
     }
 }

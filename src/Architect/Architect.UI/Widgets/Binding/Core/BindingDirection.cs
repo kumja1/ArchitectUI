@@ -1,4 +1,4 @@
-namespace Architect.UI.Widgets.Bindings;
+namespace Architect.UI.Widgets.Binding.Core;
 
 /// <summary>
 /// Specifies the direction of data binding.

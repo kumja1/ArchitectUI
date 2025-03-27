@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <RootNamespace>Architect.Build.SourceGenerator.Analyzer</RootNamespace>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules> 
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
 
