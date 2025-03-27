@@ -24,4 +24,6 @@ public class IconButton : Button
 
         base.Draw(canvas);
     }
+
+    public override Size GetNaturalSize() => base.GetNaturalSize() + ImageSize;
 }

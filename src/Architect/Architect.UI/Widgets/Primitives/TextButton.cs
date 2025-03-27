@@ -1,5 +1,8 @@
 using System.Drawing;
-using Architect.UI.Widgets.Bindings;
+using Architect.UI.Widgets.Binding.Core;
+using Cosmos.System.Graphics;
+using Cosmos.System.Graphics.Fonts;
+using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Primitives;
 
@@ -17,6 +20,12 @@ public class TextButton : Button
         set => SetProperty(nameof(TextColor), value);
     }
 
+    public Font TextFont
+    {
+        get => GetProperty(nameof(TextFont), defaultValue: PCScreenFont.Default)!;
+        set => SetProperty(nameof(TextFont), value);
+    }
+
     public TextButton()
     {
         Content = new TextBlock { TextColor = TextColor, Text = Text }.GetReference(
@@ -30,5 +39,9 @@ public class TextButton : Button
         Bind<TextButton, Color>(nameof(TextColor))
             .WithBindingDirection(BindingDirection.TwoWay)
             .To(textBlock);
+
+        Bind<TextButton, Font>(nameof(TextFont))
+            .WithBindingDirection(BindingDirection.TwoWay)
+            .To(textBlock, nameof(TextBlock.Font));
     }
 }

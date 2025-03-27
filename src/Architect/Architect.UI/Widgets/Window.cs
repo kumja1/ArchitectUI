@@ -1,7 +1,8 @@
 using System.Drawing;
 using Architect.Common.Utilities;
+using Architect.Core.Rendering;
 using Architect.UI.Widgets.Base;
-using Architect.UI.Widgets.Bindings;
+using Architect.UI.Widgets.Binding.Core;
 using Architect.UI.Widgets.Layout;
 using Architect.UI.Widgets.Primitives;
 using Cosmos.System.Graphics;
@@ -11,24 +12,6 @@ namespace Architect.UI.Widgets;
 
 public class Window : Widget
 {
-    public Size MaxSize
-    {
-        get => GetProperty(nameof(MaxSize), defaultValue: new Size(800, 600));
-        init => SetProperty(nameof(MaxSize), value);
-    }
-
-    public Size MinSize
-    {
-        get => GetProperty(nameof(MinSize), defaultValue: new Size(100, 100));
-        init => SetProperty(nameof(MinSize), value);
-    }
-
-    public Size CurrentSize
-    {
-        get => GetProperty(nameof(CurrentSize), defaultValue: Size.Zero);
-        private set => SetProperty(nameof(CurrentSize), value);
-    }
-
     public bool IsMaximized
     {
         get => GetProperty<bool>(nameof(IsMaximized));
@@ -45,6 +28,12 @@ public class Window : Widget
         set => SetProperty(nameof(TopBarColor), value);
     }
 
+    public Size TopBarSize
+    {
+        get => GetProperty(nameof(TopBarSize), defaultValue: new Size(0, 20));
+        set => SetProperty(nameof(TopBarSize), value);
+    }
+
     protected Window()
         : base()
     {
@@ -56,9 +45,8 @@ public class Window : Widget
                 {
                     VerticalAlignment = VerticalAlignment.Top,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    Size = new Size(0, 30),
+                    Size = TopBarSize,
                     BackgroundColor = TopBarColor,
-
                     Content = new Stack
                     {
                         Content =
@@ -93,6 +81,16 @@ public class Window : Widget
             .To(topBar, nameof(BackgroundColor));
     }
 
+    public override Size Measure(Size availableSize)
+    {
+        availableSize = Size.Clamp(
+            availableSize,
+            Size.Zero,
+            RenderManager.Instance.CanvasSize
+        );
+        return base.Measure(availableSize);
+    }
+
     public override void Draw(Canvas canvas)
     {
         DrawBackground(canvas);
@@ -110,7 +108,7 @@ public class Window : Widget
 
     public override void Dispose()
     {
-        base.Dispose();
         InternalContent.Dispose();
+        base.Dispose();
     }
 }

@@ -1,16 +1,19 @@
 using Architect.Common.Interfaces;
+using Architect.Common.Models;
 using Cosmos.System.Graphics;
 
 namespace Architect.UI.Widgets.Base;
 
 public class MultiContentWidget : Widget
 {
+    protected new List<IWidget> InternalContent;
+
     /// <summary>
     /// Gets or sets the collection of content widgets.
     /// </summary>
-    public new List<IWidget>? Content
+    public new List<IWidget> Content
     {
-        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: null);
+        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: []);
         set => SetProperty(nameof(Content), value);
     }
 
@@ -29,7 +32,7 @@ public class MultiContentWidget : Widget
     public override void Draw(Canvas canvas)
     {
         DrawBackground(canvas);
-        foreach (var widget in Content)
+        foreach (var widget in InternalContent)
         {
             widget.Draw(canvas);
         }
@@ -46,4 +49,34 @@ public class MultiContentWidget : Widget
 
         GC.SuppressFinalize(this);
     }
+
+    public override Size Measure(Size availableSize)
+    {
+        var width = 0;
+        var height = 0;
+
+        foreach (Widget item in Content.Cast<Widget>())
+        {
+            var desiredSize = item.Measure(availableSize);
+
+            width = Math.Max(width, desiredSize.Width);
+            height = Math.Max(height, desiredSize.Height);
+        }
+
+        return new Size(width, height);
+    }
+
+    public override Size GetNaturalSize() =>
+        Size
+        + InternalContent.Aggregate(
+            Size.Zero,
+            (current, widget) =>
+            {
+                var desiredSize = widget.GetNaturalSize();
+                return new Size(
+                    Math.Max(current.Width, desiredSize.Width),
+                    Math.Max(current.Height, desiredSize.Height)
+                );
+            }
+        );
 }

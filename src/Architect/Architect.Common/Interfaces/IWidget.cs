@@ -1,10 +1,9 @@
-using Architect.Common.Interfaces.Bindings;
 using Architect.Common.Models;
 using Cosmos.System.Graphics;
 
 namespace Architect.Common.Interfaces;
 
-public interface IWidget : IDisposable, IBindable
+public interface IWidget : IDisposable
 {
     /// <summary>
     /// Gets a value indicating whether the widget is visible.
@@ -35,6 +34,10 @@ public interface IWidget : IDisposable, IBindable
     void OnAttachToWidget(IWidget widget);
 
     Size GetNaturalSize();
+
+    Size Measure(Size availableSize);
+
+    void Arrange(Rect finalRect);
 
     /// <summary>
     /// Method called when the widget is detached from its parent widget.

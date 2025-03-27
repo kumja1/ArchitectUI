@@ -12,13 +12,13 @@ using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Base;
 
-public class Widget : IDisposable, IWidget
+public class Widget : IDisposable, IWidget, IBindable
 {
     // private static IWidget? _previousUpdatingWidget;
 
     private bool _isDirty;
 
-    private Size? _naturalSize;
+    private protected Size? _naturalSize;
 
     private readonly List<IDisposable> _bindings = [];
 
@@ -91,7 +91,7 @@ public class Widget : IDisposable, IWidget
 
     public virtual void OnDetachFromWidget() => Parent = null;
 
-    public virtual Size Measure(Size availableSize)
+    public virtual Size Measure(Size availableSize = default)
     {
         _naturalSize ??= GetNaturalSize();
         return Size.Clamp(_naturalSize.Value, Size, availableSize);
@@ -143,7 +143,7 @@ public class Widget : IDisposable, IWidget
         Position = new Vector2(x, y);
     }
 
-    public void BeginDraw(Canvas canvas)
+    public virtual void BeginDraw(Canvas canvas)
     {
         ArgumentNullException.ThrowIfNull(canvas, nameof(canvas));
 

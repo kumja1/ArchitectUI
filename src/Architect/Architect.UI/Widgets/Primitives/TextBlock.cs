@@ -10,10 +10,13 @@ namespace Architect.UI.Widgets.Primitives;
 
 class TextBlock : Widget
 {
-    private struct Line
+    private readonly struct Line
     {
-        public string Text { get; set; }
-        public Vector2 Position { get; set; }
+        public string Text { get; init; }
+
+        public Vector2 Position { get; init; }
+
+        public readonly int Length => Text.Length;
     }
 
     private readonly List<Line> _lines = [];
@@ -149,4 +152,8 @@ class TextBlock : Widget
 
     private bool IsWrappable(string text) =>
         EnableTextWrapping && Font.Width * text.Length > Size.Width;
+
+    public override Size GetNaturalSize() =>
+        base.GetNaturalSize()
+        + new Size(_lines.Max(l => l.Length) * Font.Width, _lines.Count * Font.Height);
 }

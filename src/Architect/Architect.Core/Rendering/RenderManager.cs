@@ -1,6 +1,7 @@
 using System.Drawing;
 using Architect.Common.Interfaces;
 using Cosmos.System.Graphics;
+using Size = Architect.Common.Models.Size;
 
 namespace Architect.Core.Rendering;
 
@@ -28,9 +29,13 @@ public sealed class RenderManager(Canvas canvas)
     private readonly PriorityQueue<IWidget, int> _dirtyWidgets = new();
 
     private Canvas Canvas { get; init; } = canvas;
+
+    public Size CanvasSize => new((int)Canvas.Mode.Width, (int)Canvas.Mode.Height);
+
     public void Tick()
     {
         DrawMouse();
+        
         if (_dirtyWidgets.Count == 0)
             return;
 
@@ -43,9 +48,7 @@ public sealed class RenderManager(Canvas canvas)
         _dirtyWidgets.Clear();
     }
 
-    private void DrawMouse()
-    {
-    }
+    private void DrawMouse() { }
 
     public void ScheduleRedraw(IWidget widget)
     {
@@ -55,5 +58,12 @@ public sealed class RenderManager(Canvas canvas)
         }
     }
 
-    public void Erase(IWidget widget) => Canvas.DrawRectangle(Color.Transparent, widget.Position.X, widget.Position.Y, widget.Size.Width, widget.Size.Height);
+    public void Erase(IWidget widget) =>
+        Canvas.DrawRectangle(
+            Color.Transparent,
+            widget.Position.X,
+            widget.Position.Y,
+            widget.Size.Width,
+            widget.Size.Height
+        );
 }

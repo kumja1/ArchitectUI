@@ -1,4 +1,3 @@
-using Architect.Common.Interfaces;
 using Architect.Common.Models;
 using Architect.Common.Utilities;
 using Architect.UI.Widgets.Base;
@@ -15,30 +14,36 @@ public class DockPanel : MultiContentWidget
         set => SetProperty(nameof(ItemSpacing), value);
     }
 
-    public override void Arrange()
-    {
-        base.Arrange();
 
+    public override void Arrange(Rect finalRect)
+    {
+        base.Arrange(finalRect);
         foreach (Widget item in Content.Cast<Widget>())
         {
             item.OnAttachToWidget(this);
 
             var y = item.VerticalAlignment switch
             {
-                VerticalAlignment.Top => AlignmentHelper.TopCenter(item.Size, Size).Y
+                VerticalAlignment.Top => AlignmentHelper.TopCenter(item.Size, finalRect.Size).Y
                     + ItemSpacing.Height,
-                VerticalAlignment.Bottom => AlignmentHelper.BottomCenter(item.Size, Size).Y
-                    - ItemSpacing.Height,
-                _ or VerticalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size).Y,
+                VerticalAlignment.Bottom => AlignmentHelper
+                    .BottomCenter(item.Size, finalRect.Size)
+                    .Y - ItemSpacing.Height,
+                _ or VerticalAlignment.Stretch => AlignmentHelper
+                    .Center(item.Size, finalRect.Size)
+                    .Y,
             };
 
             var x = item.HorizontalAlignment switch
             {
-                HorizontalAlignment.Left => AlignmentHelper.LeftCenter(item.Size, Size).X
+                HorizontalAlignment.Left => AlignmentHelper.LeftCenter(item.Size, finalRect.Size).X
                     + ItemSpacing.Width,
-                HorizontalAlignment.Right => AlignmentHelper.RightCenter(item.Size, Size).X
-                    - ItemSpacing.Width,
-                _ or HorizontalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size).X,
+                HorizontalAlignment.Right => AlignmentHelper
+                    .RightCenter(item.Size, finalRect.Size)
+                    .X - ItemSpacing.Width,
+                _ or HorizontalAlignment.Stretch => AlignmentHelper
+                    .Center(item.Size, finalRect.Size)
+                    .X,
             };
 
             item.Position = new Vector2(x, y);
