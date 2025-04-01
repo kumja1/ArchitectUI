@@ -41,7 +41,7 @@ public static class CanvasExtensions
         Color color,
         Vector2 position,
         Size size
-    ) => canvas.DrawString(text, font, color, position.X, position.Y, size);
+    ) => canvas.DrawString(text, font, color, position.X + size.Width, position.Y + size.Height);
 
     public static void DrawRectangle(this Canvas canvas, Color color, int x, int y, Size size) =>
         canvas.DrawRectangle(color, x, y, size.Width, size.Height);

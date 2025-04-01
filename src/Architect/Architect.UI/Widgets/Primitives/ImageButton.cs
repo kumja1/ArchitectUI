@@ -3,7 +3,7 @@ using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Primitives;
 
-public class IconButton : Button
+public class ImageButton : Button
 {
     public Image? Image
     {

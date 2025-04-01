@@ -1,5 +1,5 @@
 using System.Drawing;
-using Architect.UI.Widgets.Binding.Core;
+using Architect.UI.Data.Core;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using Size = Architect.Common.Models.Size;

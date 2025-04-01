@@ -15,34 +15,32 @@ public class DockPanel : MultiContentWidget
     }
 
 
-    public override void Arrange(Rect finalRect)
+    public override void Arrange(Size finalSize)
     {
-        base.Arrange(finalRect);
-        foreach (Widget item in Content.Cast<Widget>())
+        base.Arrange(finalSize);
+        foreach (Widget item in InternalContent.Cast<Item>())
         {
             item.OnAttachToWidget(this);
 
             var y = item.VerticalAlignment switch
             {
-                VerticalAlignment.Top => AlignmentHelper.TopCenter(item.Size, finalRect.Size).Y
+                VerticalAlignment.Top => AlignmentHelper.(item.Size, finalSize).Y
                     + ItemSpacing.Height,
                 VerticalAlignment.Bottom => AlignmentHelper
-                    .BottomCenter(item.Size, finalRect.Size)
+                    .BottomCenter(item.Size, finalSize)
                     .Y - ItemSpacing.Height,
                 _ or VerticalAlignment.Stretch => AlignmentHelper
-                    .Center(item.Size, finalRect.Size)
+                    .CenterY(item.Size, finalSize)
                     .Y,
             };
 
             var x = item.HorizontalAlignment switch
             {
-                HorizontalAlignment.Left => AlignmentHelper.LeftCenter(item.Size, finalRect.Size).X
-                    + ItemSpacing.Width,
-                HorizontalAlignment.Right => AlignmentHelper
-                    .RightCenter(item.Size, finalRect.Size)
+                HorizontalAlignment.Left => ItemSpacing.Width,
+                HorizontalAlignment.Right => AlignmentHelper.CenterX(item.Size, finalSize)
                     .X - ItemSpacing.Width,
                 _ or HorizontalAlignment.Stretch => AlignmentHelper
-                    .Center(item.Size, finalRect.Size)
+                    .Center(item.Size, finalSize)
                     .X,
             };
 

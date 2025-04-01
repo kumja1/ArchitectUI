@@ -50,20 +50,48 @@ public class MultiContentWidget : Widget
         GC.SuppressFinalize(this);
     }
 
-    public override Size Measure(Size availableSize)
+    public override Size Measure(Size availableSize = default)
     {
-        var width = 0;
-        var height = 0;
+        float width = 0;
+        float height = 0;
 
         foreach (Widget item in Content.Cast<Widget>())
         {
             var desiredSize = item.Measure(availableSize);
-
             width = Math.Max(width, desiredSize.Width);
             height = Math.Max(height, desiredSize.Height);
         }
 
         return new Size(width, height);
+    }
+
+    protected override void ArrangeContent()
+    {
+        foreach (var item in Content)
+        {
+            item.Measure(Size - item.Margin.Size);
+            var rect = new Rect(
+                Position.X + item.Margin.Left,
+                Position.Y + item.Margin.Top,
+                item.MeasuredSize.Width,
+                item.MeasuredSize.Height
+            );
+            item.Arrange(rect);
+        }
+    }
+
+    protected override void AttachContent(ref object currentValue, object? widget)
+    {
+        if (currentValue is List<IWidget> currentWidgets && widget is List<IWidget> newWidgets)
+        {
+            currentWidgets.RemoveAll(x =>
+            {
+                x.Dispose();
+                return true;
+            });
+            newWidgets.ForEach(x => x.OnAttachToWidget(this));
+            InternalContent = newWidgets;
+        }
     }
 
     public override Size GetNaturalSize() =>

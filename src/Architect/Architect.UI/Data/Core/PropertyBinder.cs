@@ -1,7 +1,7 @@
 using Architect.UI.Widgets.Base;
-using Architect.UI.Widgets.Binding.Interfaces;
+using Architect.UI.Data.Interfaces;
 
-namespace Architect.UI.Widgets.Binding.Core;
+namespace Architect.UI.Data.Core;
 
 /// <summary>
 /// Binds a property from a source widget to a target widget, optionally using converters and supporting two-way binding.
@@ -33,7 +33,6 @@ public class PropertyBinder<TSource, TValue>
     /// <param name="source">The source widget.</param>
     /// <param name="sourcePropertyName">The name of the property to bind on the source widget.</param>
     /// <param name="sourceBindings"></param>
-    /// <param name="bindings">A shared list of bindings to which this binding will be added.</param>
     /// <param name="sourceGetter">Optional getter for the source property. If not provided, the widget's GetProperty method is used.</param>
     /// <param name="sourceSetter">Optional setter for the source property. If not provided, the widget's SetProperty method is used.</param>
     internal PropertyBinder(

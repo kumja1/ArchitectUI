@@ -1,4 +1,4 @@
-﻿using Architect.Common.Interfaces;
+﻿using Architect.UI.Data.Interfaces;
 using Roslyn.Generated;
 
 namespace Architect.Build.SourceGenerator.Example;
@@ -7,15 +7,19 @@ namespace Architect.Build.SourceGenerator.Example;
 public partial class BindableModel : IBindable
 {
     [BindableProperty]
-    private string monkey { get; set; }
+    private string _text;
 }
+
+
+
+
 
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        var model = new BindableModel { Monkey = "Hello, World!" };
-        Console.WriteLine(model.Monkey);
+        var model = new BindableModel { Text = "Hello, World!" };
+        Console.WriteLine(model.Text);
     }
 }

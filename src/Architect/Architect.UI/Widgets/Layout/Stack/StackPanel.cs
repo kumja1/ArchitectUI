@@ -1,8 +1,8 @@
 using Architect.UI.Widgets.Base;
 
-namespace Architect.UI.Widgets.Layout;
+namespace Architect.UI.Widgets.Layout.Stack;
 
-class Stack : MultiContentWidget
+class StackPanel : MultiContentWidget
 {
     public int Spacing
     {

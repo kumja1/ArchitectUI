@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using Architect.UI.Widgets.Base;
-using Architect.UI.Widgets.Binding.Interfaces;
+using Architect.UI.Data.Interfaces;
 
-namespace Architect.UI.Widgets.Binding.Core;
+namespace Architect.UI.Data.Core;
 
 /// <summary>
 /// Represents a binding between the properties of a source and target widget, allowing for one-way or two-way data synchronization.
@@ -24,7 +24,15 @@ public sealed class Binding<TSource, TTarget, TValue> : IBinding
 
     private bool _isUpdating; // This is used to prevent infinite loops when updating the source or target property during a binding update.
 
-    public BindingDirection _direction;
+    private readonly BindingDirection _direction;
+
+    public BindingDirection Direction => _direction;
+
+    public bool IsTwoWay => _isTwoWay;
+
+    public string SourcePropertyName => _sourcePropertyName;
+
+    public string TargetPropertyName => _targetPropertyName;    
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Binding{TSource, TTarget, TValue}"/> class.
@@ -143,14 +151,5 @@ public sealed class Binding<TSource, TTarget, TValue> : IBinding
             update();
     }
 
-    public void Deconstruct(
-        out string sourcePropertyName,
-        out string targetPropertyName,
-        out BindingDirection direction
-    )
-    {
-        sourcePropertyName = _sourcePropertyName;
-        targetPropertyName = _targetPropertyName;
-        direction = _direction;
-    }
 }
+

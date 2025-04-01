@@ -55,8 +55,7 @@ namespace Architect.Build.SourceGenerator.Analyzer.Test.Utilities
                 test.TestState.Sources.Add(source);
 
             foreach (var generatedSource in generatedSources)
-                test.TestState.GeneratedSources.Add(generatedSource);
-
+               test.TestState.Sources.Add(generatedSource);
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
             return test.RunAsync();
         }

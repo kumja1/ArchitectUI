@@ -21,5 +21,5 @@ public static class Utils
         return true;
     }
 
-    public static string ToAlpha(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+    public static string ToAlpha(string s) => char.ToUpper(s[0]) + s[1..];
 }

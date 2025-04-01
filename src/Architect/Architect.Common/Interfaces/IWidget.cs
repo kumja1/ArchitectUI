@@ -15,6 +15,12 @@ public interface IWidget : IDisposable
     /// </summary>
     Size Size { get; set; }
 
+    Size MeasuredSize { get; }
+
+    EdgeInsets Margin { get; set; }
+
+    EdgeInsets Padding { get; set; }
+
     IWidget? Content { get; set; }
 
     /// <summary>
@@ -35,7 +41,7 @@ public interface IWidget : IDisposable
 
     Size GetNaturalSize();
 
-    Size Measure(Size availableSize);
+    Size Measure(Size availableSize = default);
 
     void Arrange(Rect finalRect);
 
