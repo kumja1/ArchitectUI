@@ -52,8 +52,8 @@ public class MultiContentWidget : Widget
 
     public override Size Measure(Size availableSize = default)
     {
-        float width = 0;
-        float height = 0;
+        double width = 0;
+        double height = 0;
 
         foreach (Widget item in Content.Cast<Widget>())
         {
@@ -67,12 +67,17 @@ public class MultiContentWidget : Widget
 
     protected override void ArrangeContent()
     {
-        foreach (var item in Content)
+        foreach (var item in InternalContent)
         {
-            item.Measure(Size - item.Margin.Size);
+            item.Measure(
+                new Size(
+                    Math.Max(0, SizeX - item.Margin.Width),
+                    Math.Max(0, SizeY - item.Margin.Height)
+                )
+            );
             var rect = new Rect(
-                Position.X + item.Margin.Left,
-                Position.Y + item.Margin.Top,
+                X + item.Margin.Left,
+                Y + item.Margin.Top,
                 item.MeasuredSize.Width,
                 item.MeasuredSize.Height
             );
@@ -89,13 +94,17 @@ public class MultiContentWidget : Widget
                 x.Dispose();
                 return true;
             });
-            newWidgets.ForEach(x => x.OnAttachToWidget(this));
+
+            foreach (var item in newWidgets)
+            {
+                item.OnAttachToWidget(this);
+            }
             InternalContent = newWidgets;
         }
     }
 
     public override Size GetNaturalSize() =>
-        Size
+        Padding.Size
         + InternalContent.Aggregate(
             Size.Zero,
             (current, widget) =>

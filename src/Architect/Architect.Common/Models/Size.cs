@@ -1,10 +1,10 @@
 namespace Architect.Common.Models;
 
-public readonly record struct Size(float width, float height)
+public readonly record struct Size(double width, double height)
 {
-    public readonly float Width = width;
+    public readonly double Width = width;
 
-    public readonly float Height = height;
+    public readonly double Height = height;
 
     public static Size Zero => new(0, 0);
 
@@ -21,7 +21,7 @@ public readonly record struct Size(float width, float height)
 
     public static Size operator -(Size left, Size right) =>
         new(left.Width - right.Width, left.Height - right.Height);
-        
+
     public static Size Clamp(Size value, Size min, Size max) =>
         new(
             Math.Clamp(value.Width, min.Width, max.Width),

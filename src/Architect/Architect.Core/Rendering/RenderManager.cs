@@ -9,40 +9,29 @@ public sealed class RenderManager(Canvas canvas)
 {
     private static RenderManager? _instance;
 
-    public static RenderManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                throw new InvalidOperationException("RenderManager must be initialized first");
-            }
-            return _instance;
-        }
-    }
+    public static RenderManager Instance =>
+        _instance ?? throw new InvalidOperationException("RenderManager not initialized.");
 
-    public static RenderManager Initialize(Canvas canvas)
-    {
-        return _instance ??= new RenderManager(canvas);
-    }
+    public static RenderManager Initialize(Canvas canvas) =>
+        _instance ??= new RenderManager(canvas);
 
     private readonly PriorityQueue<IWidget, int> _dirtyWidgets = new();
 
-    private Canvas Canvas { get; init; } = canvas;
+    private readonly Canvas _canvas = canvas;
 
-    public Size CanvasSize => new((int)Canvas.Mode.Width, (int)Canvas.Mode.Height);
+    public Size ScreenSize => new((int)_canvas.Mode.Width, (int)_canvas.Mode.Height);
 
     public void Tick()
     {
         DrawMouse();
-        
+
         if (_dirtyWidgets.Count == 0)
             return;
 
         while (_dirtyWidgets.Count > 0 && _dirtyWidgets.TryDequeue(out var widget, out _))
         {
             Erase(widget);
-            widget.BeginDraw(Canvas);
+            widget.BeginDraw(_canvas);
         }
 
         _dirtyWidgets.Clear();

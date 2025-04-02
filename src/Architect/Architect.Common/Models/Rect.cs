@@ -2,18 +2,18 @@ namespace Architect.Common.Models;
 
 public readonly record struct Rect(Vector2 Position, Size Size)
 {
-    public Rect(float x, float y, float width, float height)
+    public Rect(double x, double y, double width, double height)
         : this(new Vector2(x, y), new Size(width, height)) { }
 
     public static Rect Zero => new(Vector2.Zero, Size.Zero);
 
     public static Rect Infinite => new(Vector2.Zero, Size.Infinite);
 
-    public float Width => Size.Width;
-    public float Height => Size.Height;
+    public double Width => Size.Width;
+    public double Height => Size.Height;
 
-    public float X => Position.X;
-    public float Y => Position.Y;
+    public double X => Position.X;
+    public double Y => Position.Y;
 
     public static Rect operator *(Rect left, int right) =>
         new(left.Position * right, left.Size * right);

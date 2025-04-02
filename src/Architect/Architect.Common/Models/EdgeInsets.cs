@@ -5,7 +5,11 @@ public readonly record struct EdgeInsets(float Left, float Top, float Right, flo
     public EdgeInsets(float uniform)
         : this(uniform, uniform, uniform, uniform) { }
 
-    public Size Size => new(Left + Right, Top + Bottom);
+    public readonly Size Size => new(Left + Right, Top + Bottom);
+
+    public readonly double Width => Size.Width;
+
+    public readonly double Height => Size.Height;
 
     public static EdgeInsets Zero => new(0);
 

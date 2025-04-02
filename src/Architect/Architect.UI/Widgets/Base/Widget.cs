@@ -16,24 +16,20 @@ public class Widget : IDisposable, IWidget, IBindable
 {
     // private static IWidget? _previousUpdatingWidget;
     private bool _isDirty;
-
     private bool _isDisposed;
-
+    private Vector2 _lastPosition;
     protected Size? _measuredSize;
-
     protected Size? _naturalSize;
-
-    private readonly List<IDisposable> _bindings = [];
-
-    private readonly Dictionary<string, object> _properties = [];
+    private readonly List<IDisposable> _bindings = new();
+    private readonly Dictionary<string, object> _properties = new();
 
     public event Action<string, object> PropertyChanged = delegate { };
 
     protected IWidget? InternalContent;
-
     protected IWidget? Parent;
 
     public Size MeasuredSize => _measuredSize.Value;
+    public Vector2 LastPosition => _lastPosition;
 
     public HorizontalAlignment HorizontalAlignment
     {
@@ -59,16 +55,28 @@ public class Widget : IDisposable, IWidget, IBindable
         set => SetProperty(nameof(ZIndex), value);
     }
 
-    public Size Size
+    public double X
     {
-        get => GetProperty(nameof(Size), defaultValue: Size.Zero);
-        set => SetProperty(nameof(Size), value);
+        get => GetProperty(nameof(X), defaultValue: 0);
+        set => SetProperty(nameof(X), value);
     }
 
-    public Vector2 Position
+    public double Y
     {
-        get => GetProperty(nameof(Position), defaultValue: Vector2.Zero);
-        set => SetProperty(nameof(Position), value);
+        get => GetProperty(nameof(Y), defaultValue: 0);
+        set => SetProperty(nameof(Y), value);
+    }
+
+    public double SizeX
+    {
+        get => GetProperty(nameof(SizeX), defaultValue: 0);
+        set => SetProperty(nameof(SizeX), value);
+    }
+
+    public double SizeY
+    {
+        get => GetProperty(nameof(SizeY), defaultValue: 0);
+        set => SetProperty(nameof(SizeY), value);
     }
 
     public IWidget? Content
@@ -101,21 +109,14 @@ public class Widget : IDisposable, IWidget, IBindable
 
     protected virtual void OnPropertyChanged(string name, object previousValue, object value)
     {
-        // Remove _layoutArea calculation from here - it belongs in Arrange
         switch (name)
         {
             case nameof(Content):
                 AttachContent(ref previousValue, (IWidget)value);
                 break;
-            case nameof(Size):
             case nameof(HorizontalAlignment):
             case nameof(VerticalAlignment):
             case nameof(Padding):
-                // Don't self-arrange - request parent layout
-                Parent?.MarkDirty(true);
-                break;
-            case nameof(Position):
-                // Position changes should trigger parent re-layout
                 Parent?.MarkDirty(true);
                 break;
         }
@@ -128,27 +129,31 @@ public class Widget : IDisposable, IWidget, IBindable
         var desiredWidth =
             HorizontalAlignment == HorizontalAlignment.Stretch
                 ? finalRect.Size.Width
-                : Math.Min(Size.Width, finalRect.Size.Width);
+                : Math.Min(SizeX, finalRect.Size.Width);
 
         var desiredHeight =
             VerticalAlignment == VerticalAlignment.Stretch
                 ? finalRect.Size.Height
-                : Math.Min(Size.Height, finalRect.Size.Height);
+                : Math.Min(SizeY, finalRect.Size.Height);
 
         var offset = GetOffset(finalRect.Size, desiredWidth, desiredHeight);
 
-        Size = new Size(desiredWidth, desiredHeight);
-        Position = finalRect.Position + offset;
+        // Update the scalar properties directly
+        X = finalRect.Position.X + offset.X;
+        Y = finalRect.Position.Y + offset.Y;
+        SizeX = desiredWidth;
+        SizeY = desiredHeight;
+
         ArrangeContent();
     }
 
     protected virtual void ArrangeContent()
     {
         var contentArea = new Rect(
-            Position.X + Padding.Left,
-            Position.Y + Padding.Top,
-            Size.Width - Padding.Size.Width,
-            Size.Height - Padding.Size.Height
+            X + Padding.Left,
+            Y + Padding.Top,
+            SizeX - Padding.Size.Width,
+            SizeY - Padding.Size.Height
         );
         InternalContent?.Arrange(contentArea);
     }
@@ -160,31 +165,32 @@ public class Widget : IDisposable, IWidget, IBindable
 
         var contentAvailable = availableSize - Padding.Size;
         var contentSize = InternalContent?.Measure(contentAvailable) ?? Size.Zero;
-
         _measuredSize = contentSize + Padding.Size;
-
         return _measuredSize.Value;
     }
 
-    public virtual Size GetNaturalSize() => InternalContent?.GetNaturalSize() ?? Size.Zero;
+    public virtual Size GetNaturalSize() =>
+        Padding.Size + InternalContent?.GetNaturalSize() ?? Size.Zero;
 
-    private Vector2 GetOffset(Size finalSize, float desiredWidth, float desiredHeight)
+    private Vector2 GetOffset(Size finalSize, double desiredWidth, double desiredHeight)
     {
-        var size = new Size(desiredWidth, desiredHeight);
-        return HorizontalAlignment switch
+        var tempSize = new Size(desiredWidth, desiredHeight);
+        return new Vector2(
+            HorizontalAlignment switch
             {
-                HorizontalAlignment.Left => new Vector2(0, 0),
-                HorizontalAlignment.Center => AlignmentHelper.CenterX(finalSize, size),
-                HorizontalAlignment.Right => AlignmentHelper.Right(finalSize, size),
+                HorizontalAlignment.Left => 0,
+                HorizontalAlignment.Center => AlignmentHelper.AlignCenterX(finalSize, tempSize),
+                HorizontalAlignment.Right => AlignmentHelper.AlignRight(finalSize, tempSize),
                 _ => throw new InvalidOperationException("Invalid HorizontalAlignment value."),
-            }
-            + VerticalAlignment switch
+            },
+            VerticalAlignment switch
             {
-                VerticalAlignment.Top => new Vector2(0, 0),
-                VerticalAlignment.Center => AlignmentHelper.CenterY(finalSize, size),
-                VerticalAlignment.Bottom => AlignmentHelper.Bottom(finalSize, size),
+                VerticalAlignment.Top => 0,
+                VerticalAlignment.Center => AlignmentHelper.AlignCenterY(finalSize, tempSize),
+                VerticalAlignment.Bottom => AlignmentHelper.AlignBottom(finalSize, tempSize),
                 _ => throw new InvalidOperationException("Invalid VerticalAlignment value."),
-            };
+            }
+        );
     }
 
     /// <summary>
@@ -208,7 +214,6 @@ public class Widget : IDisposable, IWidget, IBindable
     /// Draws the widget on the specified canvas.
     /// </summary>
     /// <param name="canvas">The canvas to draw on.</param>
-
     public virtual void Draw(Canvas canvas)
     {
         DrawBackground(canvas);
@@ -216,13 +221,7 @@ public class Widget : IDisposable, IWidget, IBindable
     }
 
     protected void DrawBackground(Canvas canvas) =>
-        canvas.DrawRectangle(
-            BackgroundColor,
-            (int)Position.X,
-            (int)Position.Y,
-            (int)Size.Width,
-            (int)Size.Height
-        );
+        canvas.DrawRectangle(BackgroundColor, (int)X, (int)Y, (int)SizeX, (int)SizeY);
 
     /// <summary>
     /// Sets the value of a property and marks the widget as dirty if the value has changed.
@@ -248,7 +247,7 @@ public class Widget : IDisposable, IWidget, IBindable
                 direction == BindingDirection.OneWayToTarget
                 || direction == BindingDirection.OneWayToSource
             )
-                return; // If the binding is one way, we don't need to update the property. This is because the property does not directly impact the widget itself, so we defer the update and redrawing to the target widget.
+                return;
         }
 
         MarkDirty(true);
@@ -289,18 +288,15 @@ public class Widget : IDisposable, IWidget, IBindable
         if (currentValue is Widget currentWidget && widget is Widget newWidget)
         {
             _naturalSize = null;
-
-            currentWidget?.Dispose();
+            currentWidget.Dispose();
             newWidget.OnAttachToWidget(this);
 
-            // If internal content is null, we set the new widget(content) as the internal content
             if (InternalContent == null)
             {
                 InternalContent = newWidget;
                 return;
             }
 
-            // If internal content has an impl, we replace the impl content with the new widget
             InternalContent.Content?.Dispose();
             InternalContent.Content = newWidget;
         }
@@ -373,20 +369,5 @@ public class Widget : IDisposable, IWidget, IBindable
     }
 
     public bool HitTest(Vector2 position) =>
-        position.X >= Position.X
-        && position.X <= Position.X + Size.Width
-        && position.Y >= Position.Y
-        && position.Y <= Position.Y + Size.Height;
-
-    public override int GetHashCode() =>
-        HashCode.Combine(
-            HorizontalAlignment,
-            VerticalAlignment,
-            Parent,
-            IsVisible,
-            ZIndex,
-            Size,
-            Position,
-            Content
-        );
+        position.Within(new Vector2(X, Y), new Vector2(X + SizeX, Y + SizeY));
 }

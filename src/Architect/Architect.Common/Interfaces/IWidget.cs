@@ -13,7 +13,8 @@ public interface IWidget : IDisposable
     /// <summary>
     /// Gets or sets the size of the widget.
     /// </summary>
-    Size Size { get; set; }
+    double SizeX { get; set; }
+    double SizeY { get; set; }
 
     Size MeasuredSize { get; }
 
@@ -26,7 +27,10 @@ public interface IWidget : IDisposable
     /// <summary>
     /// Gets or sets the position of the widget.
     /// </summary>
-    Vector2 Position { get; set; }
+    double X { get; set; }
+    double Y { get; set; }
+
+    Vector2 LastPosition { get; }
 
     /// <summary>
     /// Gets or sets the z-index of the widget for layering purposes.

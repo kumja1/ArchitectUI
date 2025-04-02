@@ -35,10 +35,16 @@ class TextBlock : Widget
         set => SetProperty(nameof(TextColor), value);
     }
 
-    public Size TextSize
+    public double TextSizeX
     {
-        get => GetProperty(nameof(TextSize), defaultValue: Size.Zero);
-        set => SetProperty(nameof(TextSize), value);
+        get => GetProperty(nameof(TextSizeX), defaultValue: 0);
+        set => SetProperty(nameof(TextSizeX), value);
+    }
+
+    public double TextSizeY
+    {
+        get => GetProperty(nameof(TextSizeY), defaultValue: 0);
+        set => SetProperty(nameof(TextSizeY), value);
     }
 
     public bool EnableTextWrapping
@@ -59,7 +65,7 @@ class TextBlock : Widget
             return;
 
         foreach (var line in _lines)
-            canvas.DrawString(line.Text, Font, TextColor, Position.X, line.Position.Y, TextSize);
+            canvas.DrawString(line.Text, Font, TextColor, X, line.Position.Y, TextSizeX, TextSizeY);
 
         base.Draw(canvas);
     }

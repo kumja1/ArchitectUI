@@ -5,14 +5,8 @@ namespace Architect.UI.Widgets.Layout.Stack;
 
 class HorizontalStackPanel : StackPanel
 {
-    public override void Arrange(Rect finalRect)
+    public HorizontalStackPanel()
     {
-        var currentX = Position.X;
-        foreach (var widget in InternalContent)
-        {
-            widget.OnAttachToWidget(this);
-
-            currentX += widget.Size.Width + Spacing;
-        }
+        HorizontalAlignment = HorizontalAlignment.Stretch;
     }
 }
