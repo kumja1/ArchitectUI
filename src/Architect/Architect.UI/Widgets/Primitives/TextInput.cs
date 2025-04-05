@@ -2,8 +2,8 @@ using System.Drawing;
 using Architect.Common.Interfaces;
 using Architect.Core.Input;
 using Architect.Core.Input.Events;
+using Architect.UI.Data.Core;
 using Architect.UI.Widgets.Base;
-using Architect.UI.Widgets.Bindings;
 using Cosmos.System;
 using Size = Architect.Common.Models.Size;
 using Vector2 = Architect.Common.Models.Vector2;
@@ -20,7 +20,7 @@ class TextInput : FocusableWidget
 
     public event EventHandler<TextChangedEvent> TextChanged = delegate { };
 
-    public new TextBlock Content
+    public new required TextBlock Content
     {
         get => GetProperty<TextBlock>(nameof(Content));
         set => SetProperty(nameof(Content), value);
@@ -117,7 +117,7 @@ class TextInput : FocusableWidget
 
         Bind<TextInput, int>(nameof(BorderThickness))
             .WithBindingDirection(BindingDirection.TwoWay)
-            .WithConverter(converter: b => new Size(b, b), backwardConverter: s => s.Width)
+            .WithConverter(converter: b => new Size(b, b), backwardConverter: s => (int)s.Width)
             .To(border, nameof(Border.OutlineThickness));
 
         Bind<TextInput, Color>(nameof(BorderColor))

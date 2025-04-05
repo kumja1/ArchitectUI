@@ -4,35 +4,32 @@ using Architect.Common.Models;
 using Architect.Common.Utilities;
 using Architect.Common.Utilities.Extensions;
 using Architect.Core.Rendering;
-using Architect.UI.Widgets.Binding.Core;
-using Architect.UI.Widgets.Binding.Interfaces;
+using Architect.UI.Data.Core;
+using Architect.UI.Data.Interfaces;
 using Architect.UI.Widgets.Layout;
 using Cosmos.System.Graphics;
 using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Base;
 
-public class Widget : IDisposable, IWidget
+public class Widget : IDisposable, IWidget, IBindable
 {
     // private static IWidget? _previousUpdatingWidget;
-
     private bool _isDirty;
-
-    private Size? _naturalSize;
-
-    private readonly List<IDisposable> _bindings = [];
-
-    private readonly Dictionary<string, object> _properties = [];
+    private bool _isDisposed;
+    private Vector2 _lastPosition;
+    protected Size? _measuredSize;
+    protected Size? _naturalSize;
+    private readonly List<IDisposable> _bindings = new();
+    private readonly Dictionary<string, object> _properties = new();
 
     public event Action<string, object> PropertyChanged = delegate { };
 
-    protected IWidget InternalContent;
+    protected IWidget? InternalContent;
+    protected IWidget? Parent;
 
-    protected IWidget? Parent
-    {
-        get => GetProperty<IWidget>(nameof(Parent));
-        private set => SetProperty(nameof(Parent), value);
-    }
+    public Size MeasuredSize => _measuredSize.Value;
+    public Vector2 LastPosition => _lastPosition;
 
     public HorizontalAlignment HorizontalAlignment
     {
@@ -58,16 +55,28 @@ public class Widget : IDisposable, IWidget
         set => SetProperty(nameof(ZIndex), value);
     }
 
-    public Size Size
+    public double X
     {
-        get => GetProperty(nameof(Size), defaultValue: Size.Zero);
-        set => SetProperty(nameof(Size), value);
+        get => GetProperty(nameof(X), defaultValue: 0);
+        set => SetProperty(nameof(X), value);
     }
 
-    public Vector2 Position
+    public double Y
     {
-        get => GetProperty(nameof(Position), defaultValue: Vector2.Zero);
-        set => SetProperty(nameof(Position), value);
+        get => GetProperty(nameof(Y), defaultValue: 0);
+        set => SetProperty(nameof(Y), value);
+    }
+
+    public double Width
+    {
+        get => GetProperty(nameof(Width), defaultValue: 0);
+        set => SetProperty(nameof(Width), value);
+    }
+
+    public double Height
+    {
+        get => GetProperty(nameof(Height), defaultValue: 0);
+        set => SetProperty(nameof(Height), value);
     }
 
     public IWidget? Content
@@ -82,38 +91,34 @@ public class Widget : IDisposable, IWidget
         set => SetProperty(nameof(BackgroundColor), value);
     }
 
-    public Widget()
+    public EdgeInsets Padding
     {
-        InternalContent ??= Content;
+        get => GetProperty(nameof(Padding), defaultValue: EdgeInsets.Zero);
+        set => SetProperty(nameof(Padding), value);
+    }
+
+    public EdgeInsets Margin
+    {
+        get => GetProperty(nameof(Margin), defaultValue: EdgeInsets.Zero);
+        set => SetProperty(nameof(Margin), value);
     }
 
     public virtual void OnAttachToWidget(IWidget parent) => Parent = parent;
 
     public virtual void OnDetachFromWidget() => Parent = null;
 
-    public virtual Size Measure(Size availableSize)
+    protected virtual void OnPropertyChanged(string name, object previousValue, object value)
     {
-        _naturalSize ??= GetNaturalSize();
-        return Size.Clamp(_naturalSize.Value, Size, availableSize);
-    }
-
-    public virtual Size GetNaturalSize() => Size + InternalContent?.GetNaturalSize() ?? Size.Zero;
-
-    protected virtual void OnPropertyChanged(string name, object currentValue, object value)
-    {
-        if (name == nameof(Content) && value is IWidget newWidget)
+        switch (name)
         {
-            var currentWidget = (IWidget)currentValue;
-            AttachContent(ref currentWidget, newWidget);
-        }
-        else if (
-            name == nameof(Size)
-            || name == nameof(HorizontalAlignment)
-            || name == nameof(VerticalAlignment)
-        )
-        {
-            var finalRect = new Rect(Position, Measure(Parent?.Size ?? Size.Infinite));
-            Arrange(finalRect);
+            case nameof(Content):
+                AttachContent(ref previousValue, (IWidget)value);
+                break;
+            case nameof(HorizontalAlignment):
+            case nameof(VerticalAlignment):
+            case nameof(Padding):
+                Parent?.MarkDirty(true);
+                break;
         }
 
         PropertyChanged?.Invoke(name, value);
@@ -121,69 +126,134 @@ public class Widget : IDisposable, IWidget
 
     public virtual void Arrange(Rect finalRect)
     {
-        var x = HorizontalAlignment switch
-        {
-            HorizontalAlignment.Left => 0,
-            HorizontalAlignment.Right => AlignmentHelper.Right(finalRect.Size, Size).X,
-            HorizontalAlignment.Center => AlignmentHelper.Center(finalRect.Size, Size).X,
-            HorizontalAlignment.Stretch => Size.Width,
-            _ => Position.X,
-        };
+        var desiredWidth =
+            HorizontalAlignment == HorizontalAlignment.Stretch
+                ? finalRect.Size.Width
+                : Math.Min(Width, finalRect.Size.Width);
 
-        var y = VerticalAlignment switch
-        {
-            VerticalAlignment.Top => 0,
-            VerticalAlignment.Bottom => AlignmentHelper.Bottom(finalRect.Size, Size).Y,
-            VerticalAlignment.Center => AlignmentHelper.Center(finalRect.Size, Size).Y,
-            VerticalAlignment.Stretch => Size.Height,
-            _ => Position.Y,
-        };
+        var desiredHeight =
+            VerticalAlignment == VerticalAlignment.Stretch
+                ? finalRect.Size.Height
+                : Math.Min(Height, finalRect.Size.Height);
 
-        Size = finalRect.Size;
-        Position = new Vector2(x, y);
+        var offset = GetOffset(finalRect.Size, desiredWidth, desiredHeight);
+
+        // Update the scalar properties directly
+        X = finalRect.Position.X + offset.X;
+        Y = finalRect.Position.Y + offset.Y;
+        Width = desiredWidth;
+        Height = desiredHeight;
+
+        ArrangeContent();
     }
 
-    public void BeginDraw(Canvas canvas)
+    protected virtual void ArrangeContent()
+    {
+        if (InternalContent == null)
+            return;
+
+        var contentArea = new Rect(
+            X + Padding.Left + InternalContent.Margin.Left,
+            Y + Padding.Top + InternalContent.Margin.Top,
+            InternalContent.MeasuredSize
+        );
+
+        InternalContent.Arrange(contentArea);
+    }
+
+    public virtual Size Measure(Size availableSize = default)
+    {
+        if (!IsVisible || InternalContent == null)
+            return (_measuredSize = Size.Zero).Value;
+
+        var contentAvailable = availableSize - Padding.Size - InternalContent.Margin.Size;
+        var contentSize = InternalContent?.Measure(contentAvailable) ?? Size.Zero;
+        _measuredSize = contentSize + Padding.Size + InternalContent.Margin.Size;
+        return _measuredSize.Value;
+    }
+
+    public virtual Size GetNaturalSize() =>
+        Padding.Size + (InternalContent?.GetNaturalSize() ?? Size.Zero);
+
+    private Vector2 GetOffset(Size finalSize, double desiredWidth, double desiredHeight)
+    {
+        var tempSize = new Size(desiredWidth, desiredHeight);
+        return new Vector2(
+            HorizontalAlignment switch
+            {
+                HorizontalAlignment.Left => 0,
+                HorizontalAlignment.Center => AlignmentHelper.AlignCenterX(finalSize, tempSize),
+                HorizontalAlignment.Right => AlignmentHelper.AlignRight(finalSize, tempSize),
+                _ => throw new InvalidOperationException("Invalid HorizontalAlignment value."),
+            },
+            VerticalAlignment switch
+            {
+                VerticalAlignment.Top => 0,
+                VerticalAlignment.Center => AlignmentHelper.AlignCenterY(finalSize, tempSize),
+                VerticalAlignment.Bottom => AlignmentHelper.AlignBottom(finalSize, tempSize),
+                _ => throw new InvalidOperationException("Invalid VerticalAlignment value."),
+            }
+        );
+    }
+
+    /// <summary>
+    /// Begins drawing the widget on the specified canvas.
+    /// Always call this method instead of directly calling <see cref="Draw(Canvas)"/>.
+    /// </summary>
+    /// <param name="canvas">The canvas to draw on.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the canvas is null.</exception>
+    public virtual void BeginDraw(Canvas canvas)
     {
         ArgumentNullException.ThrowIfNull(canvas, nameof(canvas));
 
-        if (InternalContent == null)
+        if (InternalContent == null || InternalContent.Content == null)
             throw new ArgumentNullException(nameof(Content), "Content cannot be null.");
 
         Draw(canvas);
         MarkDirty(false);
     }
 
+    /// <summary>
+    /// Draws the widget on the specified canvas.
+    /// </summary>
+    /// <param name="canvas">The canvas to draw on.</param>
     public virtual void Draw(Canvas canvas)
     {
         DrawBackground(canvas);
         InternalContent!.Draw(canvas);
     }
 
-    private protected void DrawBackground(Canvas canvas) =>
-        canvas.DrawRectangle(BackgroundColor, Position.X, Position.Y, Size.Width, Size.Height);
+    protected void DrawBackground(Canvas canvas) =>
+        canvas.DrawRectangle(BackgroundColor, (int)X, (int)Y, (int)Width, (int)Height);
 
+    /// <summary>
+    /// Sets the value of a property and marks the widget as dirty if the value has changed.
+    /// </summary>
+    /// <typeparam name="T">The type of the property.</typeparam>
+    /// <param name="name">The name of the property.</param>
+    /// <param name="value">The new value of the property.</param>
+    /// <param name="associatedBinding">The binding associated with the property, if any.</param>
     public void SetProperty<T>(string name, T value, IBinding? associatedBinding = null)
     {
         var currentValue = GetProperty<T>(name);
 
-        if (ShouldRedraw(currentValue, value))
+        if (!ShouldRedraw(currentValue, value))
+            return;
+
+        _properties[name] = value;
+        OnPropertyChanged(name, currentValue, value);
+
+        if (associatedBinding != null)
         {
-            _properties[name] = value;
-            OnPropertyChanged(name, currentValue, value);
-
-            if (associatedBinding != null)
-            {
-                var (_, _, direction) = associatedBinding;
-                if (
-                    direction == BindingDirection.OneWayToTarget
-                    || direction == BindingDirection.OneWayToSource
-                )
-                    return; // If the binding is one way, we don't need to update the property. This is because the property does not directly impact the widget itself, so we defer the update and redrawing to the target widget.
-            }
-
-            MarkDirty(true);
+            var direction = associatedBinding.Direction;
+            if (
+                direction == BindingDirection.OneWayToTarget
+                || direction == BindingDirection.OneWayToSource
+            )
+                return;
         }
+
+        MarkDirty(true);
     }
 
     public T? GetProperty<T>(string name, T? defaultValue = default)
@@ -216,16 +286,31 @@ public class Widget : IDisposable, IWidget
         return true;
     }
 
-    private void AttachContent(ref IWidget currentValue, IWidget? widget)
+    protected virtual void AttachContent(ref object currentValue, object? widget)
     {
-        if (widget == null)
-            return;
-        currentValue?.Dispose();
-        widget.OnAttachToWidget(this);
+        if (currentValue is Widget currentWidget && widget is Widget newWidget)
+        {
+            _naturalSize = null;
+            currentWidget.Dispose();
+            newWidget.OnAttachToWidget(this);
+
+            if (InternalContent == null)
+            {
+                InternalContent = newWidget;
+                return;
+            }
+
+            InternalContent.Content?.Dispose();
+            InternalContent.Content = newWidget;
+        }
     }
 
     public virtual void Dispose()
     {
+        if (_isDisposed)
+            return;
+
+        _isDisposed = true;
         RenderManager.Instance.Erase(this);
         _bindings.RemoveAll(x =>
         {
@@ -287,20 +372,5 @@ public class Widget : IDisposable, IWidget
     }
 
     public bool HitTest(Vector2 position) =>
-        position.X >= Position.X
-        && position.X <= Position.X + Size.Width
-        && position.Y >= Position.Y
-        && position.Y <= Position.Y + Size.Height;
-
-    public override int GetHashCode() =>
-        HashCode.Combine(
-            HorizontalAlignment,
-            VerticalAlignment,
-            Parent,
-            IsVisible,
-            ZIndex,
-            Size,
-            Position,
-            Content
-        );
+        position.Within(new Vector2(X, Y), new Vector2(X + Width, Y + Height));
 }

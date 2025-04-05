@@ -4,30 +4,29 @@ namespace Architect.Common.Utilities;
 
 public static class AlignmentHelper
 {
-    public static Vector2 Center(Size parent, Size child) =>
-        new((parent.Width - child.Width) / 2, (parent.Height - child.Height) / 2);
+    // Overloads for Size parameters.
+    public static double AlignCenterX(Size parent, Size child) =>
+        AlignCenterX(parent.Width, child.Width);
 
-    public static Vector2 TopRight(Size parent, Size child) => new(parent.Width - child.Width, 0);
+    public static double AlignCenterY(Size parent, Size child) =>
+        AlignCenterY(parent.Height, child.Height);
 
-    public static Vector2 BottomLeft(Size parent, Size child) =>
-        new(0, parent.Height - child.Height);
+    public static double AlignRight(Size parent, Size child) =>
+        AlignRight(parent.Width, child.Width);
 
-    public static Vector2 BottomRight(Size parent, Size child) =>
-        new(parent.Width - child.Width, parent.Height - child.Height);
+    public static double AlignBottom(Size parent, Size child) =>
+        AlignBottom(parent.Height, child.Height);
 
-    public static Vector2 TopCenter(Size parent, Size child) =>
-        new((parent.Width - child.Width) / 2, 0);
+    // Overloads for double parameters.
+    public static double AlignCenterX(double parentWidth, double childWidth) =>
+        (parentWidth - childWidth) / 2d;
 
-    public static Vector2 BottomCenter(Size parent, Size child) =>
-        new((parent.Width - child.Width) / 2, parent.Height - child.Height);
+    public static double AlignCenterY(double parentHeight, double childHeight) =>
+        (parentHeight - childHeight) / 2d;
 
-    public static Vector2 LeftCenter(Size parent, Size child) =>
-        new(0, (parent.Height - child.Height) / 2);
+    public static double AlignRight(double parentWidth, double childWidth) =>
+        parentWidth - childWidth;
 
-    public static Vector2 RightCenter(Size parent, Size child) =>
-        new(parent.Width - child.Width, (parent.Height - child.Height) / 2);
-
-    public static Vector2 Right(Size parent, Size child) => new(parent.Width - child.Width, 0);
-
-    public static Vector2 Bottom(Size parent, Size child) => new(0, parent.Height - child.Height);
+    public static double AlignBottom(double parentHeight, double childHeight) =>
+        parentHeight - childHeight;
 }

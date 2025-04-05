@@ -8,14 +8,14 @@ public class AnalyzerUnitTestsTest
     private static readonly (string, string) GeneratorOutput = (
         "BindableAttributes.g.cs",
         """
-    namespace Roslyn.Generated
-    {
+    namespace Roslyn.Generated;
+    
         [System.AttributeUsage(System.AttributeTargets.Class)]
         public class BindableObjectAttribute : System.Attribute { }
 
         [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
         public class BindablePropertyAttribute : System.Attribute { }
-    }
+    
 """
     );
 

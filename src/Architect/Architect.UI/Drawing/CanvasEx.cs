@@ -6,7 +6,7 @@ using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Drawing;
 
-public static class CanvasExtensions
+public static class CanvasEx
 {
     public static void DrawString(
         this Canvas canvas,
@@ -28,7 +28,7 @@ public static class CanvasExtensions
         {
             var c = text[i];
             var charX = (int)(x + i * font.Width * sizeX);
-            var charY = y + height - font.Height * sizeY / 2;
+            var charY = (int)(y + height - font.Height * sizeY / 2);
 
             canvas.DrawChar(c, font, color, charX, charY);
         }
@@ -41,10 +41,26 @@ public static class CanvasExtensions
         Color color,
         Vector2 position,
         Size size
-    ) => canvas.DrawString(text, font, color, position.X, position.Y, size);
+    ) =>
+        canvas.DrawString(
+            text,
+            font,
+            color,
+            (int)(position.X + size.Width),
+            (int)(position.Y + size.Height)
+        );
 
     public static void DrawRectangle(this Canvas canvas, Color color, int x, int y, Size size) =>
-        canvas.DrawRectangle(color, x, y, size.Width, size.Height);
+        DrawRectangle(canvas, color, x, y, size.Width, size.Height);
+
+    public static void DrawRectangle(
+        this Canvas canvas,
+        Color color,
+        double x,
+        double y,
+        double width,
+        double height
+    ) => canvas.DrawRectangle(color, x, y, (int)width, (int)height);
 
     public static void DrawRoundedRectangle(
         this Canvas canvas,
@@ -132,5 +148,15 @@ public static class CanvasExtensions
         int y,
         Size size,
         int cornerRadius
-    ) => canvas.DrawRoundedRectangle(color, x, y, size.Width, size.Height, cornerRadius);
+    ) => DrawRoundedRectangle(canvas, color, x, y, size.Width, size.Height, cornerRadius);
+
+    public static void DrawRoundedRectangle(
+        this Canvas canvas,
+        Color color,
+        double x,
+        double y,
+        double width,
+        double height,
+        int cornerRadius
+    ) => canvas.DrawRoundedRectangle(color, x, y, width, height, cornerRadius);
 }

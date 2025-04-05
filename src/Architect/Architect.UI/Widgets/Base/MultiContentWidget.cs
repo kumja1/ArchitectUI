@@ -1,26 +1,29 @@
 using Architect.Common.Interfaces;
+using Architect.Common.Models;
 using Cosmos.System.Graphics;
 
 namespace Architect.UI.Widgets.Base;
 
-public class MultiContentWidget : Widget
+public abstract class MultiContentWidget : Widget, IMultiContentWidget
 {
     /// <summary>
     /// Gets or sets the collection of content widgets.
     /// </summary>
-    public new List<IWidget>? Content
+    public new List<IWidget> Content
     {
-        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: null);
+        get => GetProperty<List<IWidget>>(nameof(Content), defaultValue: []);
         set => SetProperty(nameof(Content), value);
     }
 
-    public void AddChild(Widget widget)
+    public virtual void AddContent(Widget widget)
     {
         Content?.Add(widget);
+
         widget.OnAttachToWidget(this);
+        ArrangeContent();
     }
 
-    public void RemoveChild(IWidget widget)
+    public virtual void RemoveContent(IWidget widget)
     {
         Content?.Remove(widget);
         widget.Dispose();
@@ -46,4 +49,52 @@ public class MultiContentWidget : Widget
 
         GC.SuppressFinalize(this);
     }
+
+    public abstract override Size Measure(Size availableSize = default);
+    protected override void ArrangeContent()
+    {
+        foreach (var widget in Content)
+        {
+            widget.Arrange(
+                new Rect(
+                    X + Padding.Left + widget.Margin.Left,
+                    Y + Padding.Top + widget.Margin.Top,
+                    widget.MeasuredSize
+                )
+            );
+        }
+    }
+
+    protected override void AttachContent(ref object currentValue, object? widget)
+    {
+        if (currentValue is List<IWidget> currentWidgets && widget is List<IWidget> newWidgets)
+        {
+            currentWidgets.RemoveAll(x =>
+            {
+                x.Dispose();
+                return true;
+            });
+
+            foreach (var item in newWidgets)
+            {
+                item.OnAttachToWidget(this);
+            }
+
+            Content = newWidgets;
+        }
+    }
+
+    public override Size GetNaturalSize() =>
+        Padding.Size
+        + Content.Aggregate(
+            Size.Zero,
+            (current, widget) =>
+            {
+                var desiredSize = widget.GetNaturalSize();
+                return new Size(
+                    Math.Max(current.Width, desiredSize.Width),
+                    Math.Max(current.Height, desiredSize.Height)
+                );
+            }
+        );
 }

@@ -1,7 +1,7 @@
-using Architect.Common.Interfaces;
 using Architect.Common.Models;
 using Architect.Common.Utilities;
 using Architect.UI.Widgets.Base;
+using Architect.UI.Widgets.Primitives;
 
 namespace Architect.UI.Widgets.Layout;
 
@@ -9,39 +9,37 @@ public class DockPanel : MultiContentWidget
 {
     public class Item : Widget;
 
-    public Size ItemSpacing
+    public DockPanel()
     {
-        get => GetProperty<Size>(nameof(ItemSpacing));
-        set => SetProperty(nameof(ItemSpacing), value);
+    
     }
 
-    public override void Arrange()
+    public override Size Measure(Size availableSize)
     {
-        base.Arrange();
+        double width = 0;
+        double height = 0;
 
-        foreach (Widget item in Content.Cast<Widget>())
+        var paddedSize = new Size(
+            availableSize.Width - Padding.Width,
+            availableSize.Height - Padding.Height
+        );
+
+        foreach (var item in Content)
         {
-            item.OnAttachToWidget(this);
-
-            var y = item.VerticalAlignment switch
+            if (item.Content != null)
             {
-                VerticalAlignment.Top => AlignmentHelper.TopCenter(item.Size, Size).Y
-                    + ItemSpacing.Height,
-                VerticalAlignment.Bottom => AlignmentHelper.BottomCenter(item.Size, Size).Y
-                    - ItemSpacing.Height,
-                _ or VerticalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size).Y,
-            };
+                item.Content.Measure(
+                    new Size(
+                        Math.Max(0,paddedSize.Width - item.Content.Margin.Width),
+                        Math.Max(0,paddedSize.Height - height - item.Margin.Height)
+                    )
+                );
 
-            var x = item.HorizontalAlignment switch
-            {
-                HorizontalAlignment.Left => AlignmentHelper.LeftCenter(item.Size, Size).X
-                    + ItemSpacing.Width,
-                HorizontalAlignment.Right => AlignmentHelper.RightCenter(item.Size, Size).X
-                    - ItemSpacing.Width,
-                _ or HorizontalAlignment.Stretch => AlignmentHelper.Center(item.Size, Size).X,
-            };
-
-            item.Position = new Vector2(x, y);
+                width = Math.Max(width, item.MeasuredSize.Width + item.Margin.Width);
+                height += item.MeasuredSize.Height + item.Margin.Height;
+            }
         }
+
+        return new Size(width, height) + Padding.Size;
     }
 }

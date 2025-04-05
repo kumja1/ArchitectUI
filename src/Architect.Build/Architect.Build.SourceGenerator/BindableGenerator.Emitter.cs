@@ -97,7 +97,7 @@ internal partial class BindableGenerator
 
             var propertyName = supportsPartialProps
                 ? propertyInfo.Name
-                : Utils.ToAlpha(propertyInfo.Name);
+                : Utils.ToAlpha(propertyInfo.Name.TrimStart('_'));
 
             if (supportsPartialProps)
                 source.WriteLine(
@@ -174,10 +174,16 @@ internal partial class BindableGenerator
         source.Indent++;
         source.WriteLine("var currentValue = GetProperty<T>(propertyName);");
         source.WriteLine();
-        source.WriteLine("if (EqualityComparer<T>.Default.Equals(currentValue, value)) return;");
+        source.WriteLine("if (EqualityComparer<T>.Default.Equals(currentValue, value))");
+
+        source.Indent++;
+        source.WriteLine("return;");
+        source.Indent--;
+
         source.WriteLine();
         source.WriteLine("switch (propertyName)");
         source.WriteLine("{");
+
         source.Indent++;
         foreach (var (propertyName, propertyBackingField, propertyType) in propertyNames)
         {
@@ -191,11 +197,13 @@ internal partial class BindableGenerator
             source.WriteLine("break;");
             source.WriteLine();
         }
+
         source.WriteLine("default:");
         source.Indent++;
         source.WriteLine(
             @"throw new ArgumentException($""Property {propertyName} not found"", nameof(propertyName));"
         );
+
         source.Indent--;
         source.WriteLine("break;");
 

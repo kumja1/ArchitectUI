@@ -76,8 +76,8 @@ public class BindableAnalyzer : DiagnosticAnalyzer
             ReportDiagnostic(
                 context,
                 DiagnosticMessages.ClassMustImplementIBindable,
-                classDeclaration.Identifier.Text,
-                classDeclaration
+                classDeclaration,
+                classDeclaration.Identifier.Text
             );
         }
 
@@ -87,8 +87,8 @@ public class BindableAnalyzer : DiagnosticAnalyzer
             ReportDiagnostic(
                 context,
                 DiagnosticMessages.ClassMustBePartial,
-                classDeclaration.Identifier.Text,
-                classDeclaration
+                classDeclaration,
+                classDeclaration.Identifier.Text
             );
         }
 
@@ -126,31 +126,30 @@ public class BindableAnalyzer : DiagnosticAnalyzer
         if (!memberDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword) && supportsPartial)
         {
             Console.WriteLine("Member is not partial.");
-            context.ReportDiagnostic(
-                Diagnostic.Create(
+            ReportDiagnostic(
+                    context,
                     DiagnosticMessages.MemberMustBePartial,
-                    memberDeclaration.GetLocation(),
+                    memberDeclaration,
                     memberDeclaration.ToString()
-                )
-            );
+                );
         }
 
         if (memberDeclaration is PropertyDeclarationSyntax propertyDeclaration)
         {
             var name = propertyDeclaration.Identifier.Text;
-            var generatedName = Utils.ToAlpha(name);
+            var generatedName = Utils.ToAlpha(supportsPartial ? name : name.TrimStart('_'));
+
             Console.WriteLine($"Property name: {name}, Generated name: {generatedName}");
 
             if (name == generatedName)
             {
                 Console.WriteLine("Property name is identical to generated name.");
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticMessages.MemberNameIsIdentical,
-                        propertyDeclaration.GetLocation(),
-                        propertyDeclaration.Identifier.Text
-                    )
-                );
+                ReportDiagnostic(
+                         context,
+                         DiagnosticMessages.MemberNameIsIdentical,
+                         propertyDeclaration,
+                         propertyDeclaration.Identifier.Text
+                 );
             }
 
             if (!supportsPartial)
@@ -159,8 +158,8 @@ public class BindableAnalyzer : DiagnosticAnalyzer
                 ReportDiagnostic(
                     context,
                     DiagnosticMessages.MemberCanBeField,
-                    propertyDeclaration.Identifier.Text,
-                    propertyDeclaration
+                    propertyDeclaration,
+                    propertyDeclaration.Identifier.Text
                 );
             }
         }
@@ -173,12 +172,11 @@ public class BindableAnalyzer : DiagnosticAnalyzer
             if (name == generatedName)
             {
                 Console.WriteLine("Field name is identical to generated name.");
-                context.ReportDiagnostic(
-                    Diagnostic.Create(
-                        DiagnosticMessages.MemberNameIsIdentical,
-                        fieldDeclaration.GetLocation(),
-                        fieldDeclaration.Declaration.Variables.First().Identifier.Text
-                    )
+                ReportDiagnostic(
+                    context,
+                         DiagnosticMessages.MemberNameIsIdentical,
+                         fieldDeclaration,
+                         fieldDeclaration.Declaration.Variables.First().Identifier.Text
                 );
             }
         }
@@ -189,8 +187,8 @@ public class BindableAnalyzer : DiagnosticAnalyzer
             ReportDiagnostic(
                 context,
                 DiagnosticMessages.MemberShouldBePrivate,
-                memberDeclaration.ToString(),
-                memberDeclaration
+                memberDeclaration,
+                memberDeclaration.ToString()
             );
         }
     }
@@ -198,11 +196,11 @@ public class BindableAnalyzer : DiagnosticAnalyzer
     private static void ReportDiagnostic(
         SyntaxNodeAnalysisContext context,
         DiagnosticDescriptor rule,
-        string message,
-        SyntaxNode node
+        SyntaxNode node,
+        params object[] args
     )
     {
-        Console.WriteLine($"Reporting diagnostic: {rule.Id}, Message: {message}");
-        context.ReportDiagnostic(Diagnostic.Create(rule, node.GetLocation(), message));
+        Console.WriteLine($"Reporting diagnostic: {rule.Id}, Message: {string.Join(", ", args)}");
+        context.ReportDiagnostic(Diagnostic.Create(rule, node.GetLocation(), args));
     }
 }

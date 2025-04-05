@@ -323,8 +323,13 @@ public sealed class InputManager
     private InputEvent? GetMouseEvent(IWidget widget, InputType inputType)
     {
         var mousePosition = new Vector2((int)MouseManager.X, (int)MouseManager.Y);
-        var wasInside = widget.HitTest(_lastMousePos);
         var isInside = widget.HitTest(mousePosition);
+        var wasInside = _lastMousePos.Within(
+            widget.LastPosition.X,
+            widget.LastPosition.Y,
+            widget.LastPosition.X + widget.Width,
+            widget.LastPosition.Y + widget.Height
+        );
 
         return mousePosition switch
         {

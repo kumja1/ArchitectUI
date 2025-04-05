@@ -10,10 +10,13 @@ namespace Architect.UI.Widgets.Primitives;
 
 class TextBlock : Widget
 {
-    private struct Line
+    private readonly struct Line
     {
-        public string Text { get; set; }
-        public Vector2 Position { get; set; }
+        public string Text { get; init; }
+
+        public Vector2 Position { get; init; }
+
+        public readonly int Length => Text.Length;
     }
 
     private readonly List<Line> _lines = [];
@@ -32,10 +35,16 @@ class TextBlock : Widget
         set => SetProperty(nameof(TextColor), value);
     }
 
-    public Size TextSize
+    public double TextWidth
     {
-        get => GetProperty(nameof(TextSize), defaultValue: Size.Zero);
-        set => SetProperty(nameof(TextSize), value);
+        get => GetProperty(nameof(TextWidth), defaultValue: 0);
+        set => SetProperty(nameof(TextWidth), value);
+    }
+
+    public double TextHeight
+    {
+        get => GetProperty(nameof(TextHeight), defaultValue: 0);
+        set => SetProperty(nameof(TextHeight), value);
     }
 
     public bool EnableTextWrapping
@@ -56,7 +65,14 @@ class TextBlock : Widget
             return;
 
         foreach (var line in _lines)
-            canvas.DrawString(line.Text, Font, TextColor, Position.X, line.Position.Y, TextSize);
+            canvas.DrawString(
+                line.Text,
+                Font,
+                TextColor,
+                X,
+                line.Position.Y,
+                new Size(TextWidth, TextHeight)
+            );
 
         base.Draw(canvas);
     }
@@ -149,4 +165,8 @@ class TextBlock : Widget
 
     private bool IsWrappable(string text) =>
         EnableTextWrapping && Font.Width * text.Length > Size.Width;
+
+    public override Size GetNaturalSize() =>
+        base.GetNaturalSize()
+        + new Size(_lines.Max(l => l.Length) * Font.Width, _lines.Count * Font.Height);
 }

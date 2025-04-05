@@ -10,6 +10,3 @@ public interface IInputEvent
     Vector2 Position { get; }
     bool Handled { get; set; }
 }
-
-
-

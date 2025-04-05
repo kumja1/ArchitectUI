@@ -3,7 +3,7 @@ using Size = Architect.Common.Models.Size;
 
 namespace Architect.UI.Widgets.Primitives;
 
-public class IconButton : Button
+public class ImageButton : Button
 {
     public Image? Image
     {
@@ -24,4 +24,6 @@ public class IconButton : Button
 
         base.Draw(canvas);
     }
+
+    public override Size GetNaturalSize() => base.GetNaturalSize() + ImageSize;
 }

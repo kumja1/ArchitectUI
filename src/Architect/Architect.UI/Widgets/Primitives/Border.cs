@@ -25,6 +25,9 @@ class Border : Widget
         set => SetProperty(nameof(OutlineThickness), value);
     }
 
+    /// <summary>
+    /// Gets or sets the radius of the border outline.
+    /// </summary>
     public int OutlineRadius
     {
         get => GetProperty(nameof(OutlineRadius), defaultValue: 0);
@@ -44,4 +47,6 @@ class Border : Widget
 
         base.Draw(canvas);
     }
+
+    public override Size GetNaturalSize() => base.GetNaturalSize() + OutlineThickness;
 }

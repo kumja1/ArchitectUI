@@ -1,4 +1,4 @@
-namespace Architect.UI.Widgets.Binding.Interfaces;
+namespace Architect.UI.Data.Interfaces;
 
 public interface IBindable
 {
