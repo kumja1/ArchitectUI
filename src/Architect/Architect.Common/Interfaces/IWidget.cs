@@ -13,8 +13,8 @@ public interface IWidget : IDisposable
     /// <summary>
     /// Gets or sets the size of the widget.
     /// </summary>
-    double SizeX { get; set; }
-    double SizeY { get; set; }
+    double Width { get; set; }
+    double Height { get; set; }
 
     Size MeasuredSize { get; }
 
@@ -48,6 +48,7 @@ public interface IWidget : IDisposable
     Size Measure(Size availableSize = default);
 
     void Arrange(Rect finalRect);
+
 
     /// <summary>
     /// Method called when the widget is detached from its parent widget.

@@ -4,10 +4,8 @@ using Cosmos.System.Graphics;
 
 namespace Architect.UI.Widgets.Base;
 
-public class MultiContentWidget : Widget
+public abstract class MultiContentWidget : Widget, IMultiContentWidget
 {
-    protected new List<IWidget> InternalContent;
-
     /// <summary>
     /// Gets or sets the collection of content widgets.
     /// </summary>
@@ -17,13 +15,15 @@ public class MultiContentWidget : Widget
         set => SetProperty(nameof(Content), value);
     }
 
-    public void AddChild(Widget widget)
+    public virtual void AddContent(Widget widget)
     {
         Content?.Add(widget);
+
         widget.OnAttachToWidget(this);
+        ArrangeContent();
     }
 
-    public void RemoveChild(IWidget widget)
+    public virtual void RemoveContent(IWidget widget)
     {
         Content?.Remove(widget);
         widget.Dispose();
@@ -32,7 +32,7 @@ public class MultiContentWidget : Widget
     public override void Draw(Canvas canvas)
     {
         DrawBackground(canvas);
-        foreach (var widget in InternalContent)
+        foreach (var widget in Content)
         {
             widget.Draw(canvas);
         }
@@ -50,38 +50,18 @@ public class MultiContentWidget : Widget
         GC.SuppressFinalize(this);
     }
 
-    public override Size Measure(Size availableSize = default)
-    {
-        double width = 0;
-        double height = 0;
-
-        foreach (Widget item in Content.Cast<Widget>())
-        {
-            var desiredSize = item.Measure(availableSize);
-            width = Math.Max(width, desiredSize.Width);
-            height = Math.Max(height, desiredSize.Height);
-        }
-
-        return new Size(width, height);
-    }
-
+    public abstract override Size Measure(Size availableSize = default);
     protected override void ArrangeContent()
     {
-        foreach (var item in InternalContent)
+        foreach (var widget in Content)
         {
-            item.Measure(
-                new Size(
-                    Math.Max(0, SizeX - item.Margin.Width),
-                    Math.Max(0, SizeY - item.Margin.Height)
+            widget.Arrange(
+                new Rect(
+                    X + Padding.Left + widget.Margin.Left,
+                    Y + Padding.Top + widget.Margin.Top,
+                    widget.MeasuredSize
                 )
             );
-            var rect = new Rect(
-                X + item.Margin.Left,
-                Y + item.Margin.Top,
-                item.MeasuredSize.Width,
-                item.MeasuredSize.Height
-            );
-            item.Arrange(rect);
         }
     }
 
@@ -99,13 +79,14 @@ public class MultiContentWidget : Widget
             {
                 item.OnAttachToWidget(this);
             }
-            InternalContent = newWidgets;
+
+            Content = newWidgets;
         }
     }
 
     public override Size GetNaturalSize() =>
         Padding.Size
-        + InternalContent.Aggregate(
+        + Content.Aggregate(
             Size.Zero,
             (current, widget) =>
             {

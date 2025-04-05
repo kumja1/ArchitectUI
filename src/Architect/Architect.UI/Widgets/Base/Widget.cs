@@ -67,16 +67,16 @@ public class Widget : IDisposable, IWidget, IBindable
         set => SetProperty(nameof(Y), value);
     }
 
-    public double SizeX
+    public double Width
     {
-        get => GetProperty(nameof(SizeX), defaultValue: 0);
-        set => SetProperty(nameof(SizeX), value);
+        get => GetProperty(nameof(Width), defaultValue: 0);
+        set => SetProperty(nameof(Width), value);
     }
 
-    public double SizeY
+    public double Height
     {
-        get => GetProperty(nameof(SizeY), defaultValue: 0);
-        set => SetProperty(nameof(SizeY), value);
+        get => GetProperty(nameof(Height), defaultValue: 0);
+        set => SetProperty(nameof(Height), value);
     }
 
     public IWidget? Content
@@ -129,33 +129,36 @@ public class Widget : IDisposable, IWidget, IBindable
         var desiredWidth =
             HorizontalAlignment == HorizontalAlignment.Stretch
                 ? finalRect.Size.Width
-                : Math.Min(SizeX, finalRect.Size.Width);
+                : Math.Min(Width, finalRect.Size.Width);
 
         var desiredHeight =
             VerticalAlignment == VerticalAlignment.Stretch
                 ? finalRect.Size.Height
-                : Math.Min(SizeY, finalRect.Size.Height);
+                : Math.Min(Height, finalRect.Size.Height);
 
         var offset = GetOffset(finalRect.Size, desiredWidth, desiredHeight);
 
         // Update the scalar properties directly
         X = finalRect.Position.X + offset.X;
         Y = finalRect.Position.Y + offset.Y;
-        SizeX = desiredWidth;
-        SizeY = desiredHeight;
+        Width = desiredWidth;
+        Height = desiredHeight;
 
         ArrangeContent();
     }
 
     protected virtual void ArrangeContent()
     {
+        if (InternalContent == null)
+            return;
+
         var contentArea = new Rect(
-            X + Padding.Left,
-            Y + Padding.Top,
-            SizeX - Padding.Size.Width,
-            SizeY - Padding.Size.Height
+            X + Padding.Left + InternalContent.Margin.Left,
+            Y + Padding.Top + InternalContent.Margin.Top,
+            InternalContent.MeasuredSize
         );
-        InternalContent?.Arrange(contentArea);
+
+        InternalContent.Arrange(contentArea);
     }
 
     public virtual Size Measure(Size availableSize = default)
@@ -163,14 +166,14 @@ public class Widget : IDisposable, IWidget, IBindable
         if (!IsVisible || InternalContent == null)
             return (_measuredSize = Size.Zero).Value;
 
-        var contentAvailable = availableSize - Padding.Size;
+        var contentAvailable = availableSize - Padding.Size - InternalContent.Margin.Size;
         var contentSize = InternalContent?.Measure(contentAvailable) ?? Size.Zero;
-        _measuredSize = contentSize + Padding.Size;
+        _measuredSize = contentSize + Padding.Size + InternalContent.Margin.Size;
         return _measuredSize.Value;
     }
 
     public virtual Size GetNaturalSize() =>
-        Padding.Size + InternalContent?.GetNaturalSize() ?? Size.Zero;
+        Padding.Size + (InternalContent?.GetNaturalSize() ?? Size.Zero);
 
     private Vector2 GetOffset(Size finalSize, double desiredWidth, double desiredHeight)
     {
@@ -221,7 +224,7 @@ public class Widget : IDisposable, IWidget, IBindable
     }
 
     protected void DrawBackground(Canvas canvas) =>
-        canvas.DrawRectangle(BackgroundColor, (int)X, (int)Y, (int)SizeX, (int)SizeY);
+        canvas.DrawRectangle(BackgroundColor, (int)X, (int)Y, (int)Width, (int)Height);
 
     /// <summary>
     /// Sets the value of a property and marks the widget as dirty if the value has changed.
@@ -369,5 +372,5 @@ public class Widget : IDisposable, IWidget, IBindable
     }
 
     public bool HitTest(Vector2 position) =>
-        position.Within(new Vector2(X, Y), new Vector2(X + SizeX, Y + SizeY));
+        position.Within(new Vector2(X, Y), new Vector2(X + Width, Y + Height));
 }

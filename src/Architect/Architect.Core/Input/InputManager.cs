@@ -327,8 +327,8 @@ public sealed class InputManager
         var wasInside = _lastMousePos.Within(
             widget.LastPosition.X,
             widget.LastPosition.Y,
-            widget.LastPosition.X + widget.SizeX,
-            widget.LastPosition.Y + widget.SizeY
+            widget.LastPosition.X + widget.Width,
+            widget.LastPosition.Y + widget.Height
         );
 
         return mousePosition switch

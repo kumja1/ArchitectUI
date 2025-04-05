@@ -5,6 +5,12 @@ public readonly record struct Rect(Vector2 Position, Size Size)
     public Rect(double x, double y, double width, double height)
         : this(new Vector2(x, y), new Size(width, height)) { }
 
+    public Rect(Vector2 position, double width, double height)
+        : this(position, new Size(width, height)) { }
+
+    public Rect(double x, double y, Size size)
+        : this(new Vector2(x, y), size) { }
+
     public static Rect Zero => new(Vector2.Zero, Size.Zero);
 
     public static Rect Infinite => new(Vector2.Zero, Size.Infinite);
