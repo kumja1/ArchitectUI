@@ -1,2 +1,2 @@
 # ArchitectUI
-Architect widget framework for CosmosOS
+UI framework for CosmosOS
