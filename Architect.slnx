@@ -1,0 +1,18 @@
+﻿<Solution>
+    <Folder Name="/src/">
+        <Project Path="src/Architect/Architect.csproj"/>
+    </Folder>
+    <Folder Name="/src/Build/">
+        <Project Path="src/Architect.Build.SourceGenerator/Architect.Build.SourceGenerator.csproj"/>
+        <Project
+                Path="src/Architect.Build.SourceGenerator.Analyzer.CodeFixes/Architect.Build.SourceGenerator.Analyzer.CodeFixes.csproj"/>
+        <Project
+                Path="src/Architect.Build.SourceGenerator.Analyzer.Package/Architect.Build.SourceGenerator.Analyzer.Package.csproj"/>
+        <Project Path="src/Architect.Build.SourceGenerator.Analyzer/Architect.Build.SourceGenerator.Analyzer.csproj"/>
+        <Project Path="src/Architect.Build.SourceGenerator.Example/Architect.Build.SourceGenerator.Example.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project
+                Path="tests/Architect.Build.SourceGenerator.Analyzer.Tests/Architect.Build.SourceGenerator.Analyzer.Tests.csproj"/>
+    </Folder>
+</Solution>

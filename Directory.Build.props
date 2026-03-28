@@ -1,16 +1,15 @@
 <Project>
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+        <Version>1.0.0</Version>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-        <Version>3.0.0</Version>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
-        <NoWarn>$(NoWarn);NU1604;</NoWarn>
+        <UseArtifactsOutput>true</UseArtifactsOutput>
+        <NoWarn>$(NoWarn);NU1604;1591</NoWarn>
     </PropertyGroup>
 </Project>

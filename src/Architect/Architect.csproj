@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <RootNamespace>Architect</RootNamespace>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Cosmos.Kernel.Plugs" />
+      <PackageReference Include="Cosmos.Kernel.System" />
+      <PackageReference Include="Cosmos.Kernel.System.Core" />
+    </ItemGroup>
+</Project>

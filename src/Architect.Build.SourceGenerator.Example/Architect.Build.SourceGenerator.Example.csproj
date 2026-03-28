@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Architect.Build.SourceGenerator.Analyzer.CodeFixes/Architect.Build.SourceGenerator.Analyzer.CodeFixes.csproj" OutputItemType="Analyzer"/>
+    <ProjectReference Include="../Architect.Build.SourceGenerator.Analyzer/Architect.Build.SourceGenerator.Analyzer.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="../Architect.Build.SourceGenerator/Architect.Build.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Architect/Architect.csproj" />
+  </ItemGroup>
+
+</Project>
