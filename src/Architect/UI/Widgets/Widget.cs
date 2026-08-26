@@ -56,13 +56,13 @@ public abstract class Widget : BindableObject, IDisposable
         set => SetProperty(ref field, value);
     }
 
-    public double Width
+    public int Width
     {
         get => GetProperty(ref field, initialValue: 0);
         set => SetProperty(ref field, value);
     }
 
-    public double Height
+    public int Height
     {
         get => GetProperty(ref field, initialValue: 0);
         set => SetProperty(ref field, value);
@@ -135,11 +135,11 @@ public abstract class Widget : BindableObject, IDisposable
     
     internal void ArrangeInternal(Rect bounds)
     {
-        double width = double.IsNaN(Width)
+        int width =Width == double.isn
             ? Math.Min(DesiredSize.Width, bounds.Width)
             : Math.Min(Width, bounds.Width);
 
-        double height = double.IsNaN(Height)
+        int height = double.IsNaN(Height)
             ? Math.Min(DesiredSize.Height, bounds.Height)
             : Math.Min(Height, bounds.Height);
 
